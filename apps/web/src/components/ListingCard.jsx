@@ -9,8 +9,14 @@ const ListingCard = ({ space }) => (
       <p>{space.description}</p>
       <p><strong>Price Per Day:</strong> ${space.price}</p>
       <p><strong>Location:</strong> {space.location}</p>
-      {space.imageUrls?.map((url, i) => (
-        <img key={i} src={url} alt="space" style={{ width: '100%', marginTop: '0.5rem' }} />
+      {/* Show each image only once, even if there are duplicates in the array */}
+      {space.imageUrls && [...new Set(space.imageUrls)].map((url, i) => (
+        <img
+          key={i}
+          src={url}
+          alt={space.title}
+          style={{ width: '100%', marginTop: '0.5rem', borderRadius: '8px' }}
+        />
       ))}
     </div>
   </Link>
