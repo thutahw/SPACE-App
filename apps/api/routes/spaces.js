@@ -11,4 +11,6 @@ router.post('/', spaceController.createSpace);
 // get single space by id
 router.get('/:id', spaceController.getSpaceById);
 
+// get single listing of a space
+
 module.exports = router;
