@@ -1,0 +1,11 @@
+{
+  "name": "space-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix apps/api\" \"npm start --prefix apps/web\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+}

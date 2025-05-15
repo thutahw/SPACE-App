@@ -17,6 +17,8 @@ app.use('/spaces', spaceRoutes);
 const bookingRoutes = require('./routes/bookings');
 app.use('/bookings', bookingRoutes);
 
+const userRoutes = require('./routes/users');
+app.use('/users', userRoutes);
 
 // Root route (optional)
 app.get('/', (req, res) => {

@@ -2,15 +2,19 @@ const express = require('express');
 const router = express.Router();
 const spaceController = require('../controllers/spaceController');
 
-// get all spaces for frontend
+// Get all spaces
 router.get('/', spaceController.getAllSpaces);
 
-// create a new space
+// Create a new space
 router.post('/', spaceController.createSpace);
 
-// get single space by id
+// Get single space by ID
 router.get('/:id', spaceController.getSpaceById);
 
-// get single listing of a space
+// Update a space (PATCH)
+router.patch('/:id', spaceController.updateSpace);
+
+// Soft delete a space (DELETE)
+router.delete('/:id', spaceController.deleteSpace); // ✅ UNCOMMENTED
 
 module.exports = router;
