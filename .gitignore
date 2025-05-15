@@ -2,6 +2,8 @@
 node_modules/
 client/node_modules/
 server/node_modules/
+apps/api/node_modules/
+node_modules/
 
 # Build output
 client/build/
@@ -58,3 +60,5 @@ coverage/
 # Optional local development tools
 .cache
 
+package.json
+package-lock.json
