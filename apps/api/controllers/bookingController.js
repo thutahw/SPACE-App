@@ -94,3 +94,40 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// Cancel a booking
+exports.cancelBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const booking = await Booking.findByPk(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    booking.status = 'cancelled';
+    await booking.save();
+
+    res.status(200).json({ message: 'Booking cancelled successfully' });
+  } catch (error) {
+    console.error('Error cancelling booking:', error);
+    res.status(500).json({ error: 'Failed to cancel booking' });
+  }
+};
+
+// Permanently delete a booking
+exports.deleteBookingPermanently = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+
+    const deleted = await Booking.destroy({ where: { id: bookingId } });
+
+    if (deleted === 0) {
+      return res.status(404).json({ error: 'Booking not found or already deleted' });
+    }
+
+    res.status(200).json({ message: 'Booking permanently deleted' });
+  } catch (error) {
+    console.error('Error deleting booking permanently:', error);
+    res.status(500).json({ error: 'Failed to delete booking' });
+  }
+};

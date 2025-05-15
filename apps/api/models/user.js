@@ -15,11 +15,17 @@ module.exports = (sequelize, DataTypes) => {
     role: {
       type: DataTypes.ENUM('user', 'admin'),
       defaultValue: 'user'
+    },
+    deleted: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, {
     hooks: {
       beforeCreate: async (user) => {
-        user.password = await bcrypt.hash(user.password, 10);
+        if (user.password) {
+          user.password = await bcrypt.hash(user.password, 10);
+        }
       },
       beforeUpdate: async (user) => {
         if (user.changed('password')) {
@@ -29,7 +35,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  User.prototype.validPassword = function(password) {
+  // Instance method to validate password
+  User.prototype.validPassword = function (password) {
     return bcrypt.compare(password, this.password);
   };
 

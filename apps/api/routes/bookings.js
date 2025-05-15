@@ -2,19 +2,23 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
 
-// create a new booking
+// Create a new booking
 router.post('/', bookingController.createBooking);
 
-// get all bookings made by a specific user (advertiser)
+// Get bookings by user
 router.get('/user/:userId', bookingController.getBookingsByUser);
 
-// get all bookings made by a specific owner of a space
+// Get bookings by space owner
 router.get('/owner/:ownerId', bookingController.getBookingsByOwner);
 
-//space owner can accept or reject a booking
+// Update booking status
 router.patch('/:bookingId', bookingController.updateBookingStatus);
+
+// Soft cancel booking
+router.patch('/:id/cancel', bookingController.cancelBooking); // ✅ MUST be present
+
+// DELETE: Hard delete a booking by admin
+router.delete('/:id', bookingController.deleteBookingPermanently);
 
 
 module.exports = router;
-// This code defines an Express router for handling booking-related routes.
-// It imports the necessary modules, creates a router instance, and sets up a POST route for creating bookings.
