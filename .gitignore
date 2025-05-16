@@ -2,6 +2,8 @@
 node_modules/
 client/node_modules/
 server/node_modules/
+apps/api/node_modules/
+apps/web/node_modules/
 
 # Build output
 client/build/
@@ -57,4 +59,3 @@ coverage/
 
 # Optional local development tools
 .cache
-

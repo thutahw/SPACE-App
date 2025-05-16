@@ -1,0 +1,12 @@
+{
+  "name": "space-app",
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run start:api\" \"npm run start:web\"",
+    "start:api": "cd apps/api && npm start",
+    "start:web": "cd apps/web && npm start"
+  }
+}
