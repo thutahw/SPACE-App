@@ -84,3 +84,22 @@ exports.createUser = async (req, res) => {
     res.status(500).json({ error: 'Failed to create user' });
   }
 };
+
+// POST login
+// Note: This should be a public action
+exports.loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const isValid = await user.validPassword(password);
+    if (!isValid) return res.status(401).json({ error: 'Incorrect password' });
+
+    res.status(200).json({ id: user.id, email: user.email, role: user.role });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+};
+

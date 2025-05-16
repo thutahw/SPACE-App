@@ -17,4 +17,8 @@ router.delete('/:id', userController.deleteUser);
 // create user (only for admin)
 router.post('/', userController.createUser);
 
+// login user
+router.post('/login', userController.loginUser);
+
+
 module.exports = router;

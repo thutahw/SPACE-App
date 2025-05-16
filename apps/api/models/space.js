@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     deleted: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    ownerId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   });
 
