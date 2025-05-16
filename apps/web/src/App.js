@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import Spaces from './pages/Spaces';
 import SpaceDetail from './pages/SpaceDetail';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import { AuthProvider } from './auth/AuthContext';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Switch>
           <Route exact path="/" component={Spaces} />
           <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
           <Route path="/spaces/:id" component={SpaceDetail} />
         </Switch>
       </Router>

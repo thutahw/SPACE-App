@@ -2,39 +2,40 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
-const Login = () => {
+const Signup = () => {
   const { login } = useAuth();
   const history = useHistory();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('user');
   const [error, setError] = useState('');
 
-  const handleLogin = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await fetch('http://localhost:4000/users/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  const handleSignup = async (e) => {
+    e.preventDefault();
 
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || 'Login failed');
-    } else {
-      login(data); // Save user in AuthContext
-      history.push('/');
+    try {
+      const res = await fetch('http://localhost:4000/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Signup failed');
+      } else {
+        login(data);
+        history.push('/');
+      }
+    } catch (err) {
+      setError('Signup failed');
     }
-  } catch (err) {
-    setError('Login failed');
-  }
-};
-
+  };
 
   return (
     <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSignup}>
         <label>Email:</label>
         <input
           type="email"
@@ -51,20 +52,24 @@ const Login = () => {
           style={{ width: '100%', marginBottom: '1rem' }}
         />
 
+        <label>Role:</label>
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          style={{ width: '100%', marginBottom: '1rem' }}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
         <button type="submit" style={{ padding: '0.5rem 1rem' }}>
-          Login
+          Sign Up
         </button>
-        <p style={{ marginTop: '1rem' }}>
-          Don’t have an account?{' '}
-          <a href="/signup" style={{ color: '#004aad', textDecoration: 'underline' }}>
-            Sign up here
-          </a>
-        </p>
       </form>
     </div>
   );
 };
 
-export default Login;
+export default Signup;
