@@ -59,6 +59,3 @@ coverage/
 
 # Optional local development tools
 .cache
-
-package.json
-package-lock.json
