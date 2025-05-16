@@ -6,6 +6,9 @@ import SpaceDetail from './pages/SpaceDetail';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { AuthProvider } from './auth/AuthContext';
+import BookingDashboard from './pages/BookingDashboard';
+
+
 
 function App() {
   return (
@@ -16,6 +19,8 @@ function App() {
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Signup} />
           <Route path="/spaces/:id" component={SpaceDetail} />
+          <Route path="/bookings" component={BookingDashboard} />
+
         </Switch>
       </Router>
     </AuthProvider>

@@ -25,25 +25,44 @@ const Spaces = () => {
         marginBottom: '2rem'
       }}>
         <h1>Available Spaces</h1>
-        <button
-          onClick={() => {
-            if (user) {
-              logout();
-            } else {
-              history.push('/login');
-            }
-          }}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: user ? '#888' : '#004aad',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          {user ? 'Logout' : 'Login'}
-        </button>
+
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {user && (
+            <button
+              onClick={() => history.push('/bookings')}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#006400',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              My Bookings
+            </button>
+          )}
+
+          <button
+            onClick={() => {
+              if (user) {
+                logout();
+              } else {
+                history.push('/login');
+              }
+            }}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: user ? '#888' : '#004aad',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            {user ? 'Logout' : 'Login'}
+          </button>
+        </div>
       </div>
 
       <p>Spaces loaded: {spaces.length}</p>
