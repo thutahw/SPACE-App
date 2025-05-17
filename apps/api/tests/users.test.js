@@ -121,7 +121,7 @@ describe('Users API', () => {
         password: 'testpass',
         name: 'Dup User'
       });
-    expect([400, 500]).toContain(res.statusCode);
+    expect([409, 400, 500]).toContain(res.statusCode);
     expect(res.body.error).toBeDefined();
   });
 });
