@@ -124,4 +124,66 @@ describe('Users API', () => {
     expect([409, 400, 500]).toContain(res.statusCode);
     expect(res.body.error).toBeDefined();
   });
+
+  it('PATCH /users/:id should not update a deleted user', async () => {
+    // Create and delete a user
+    const createRes = await request(app)
+      .post('/users')
+      .send({
+        email: 'deletedpatch@example.com',
+        password: 'testpass',
+        name: 'Deleted Patch'
+      });
+    const userId = createRes.body.id;
+    await request(app).delete(`/users/${userId}`);
+    // Try to update
+    const res = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ name: 'Should Not Update' });
+    expect([403, 404, 500]).toContain(res.statusCode);
+    if (res.statusCode === 403) {
+      expect(res.body.error).toMatch(/deleted/);
+    } else {
+      expect(res.body.error).toBeDefined();
+    }
+  });
+
+  it('DELETE /users/:id should not delete an already deleted user', async () => {
+    // Create and delete a user
+    const createRes = await request(app)
+      .post('/users')
+      .send({
+        email: 'alreadydeleted@example.com',
+        password: 'testpass',
+        name: 'Already Deleted'
+      });
+    const userId = createRes.body.id;
+    await request(app).delete(`/users/${userId}`);
+    // Try to delete again
+    const res = await request(app).delete(`/users/${userId}`);
+    expect([404, 500]).toContain(res.statusCode);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('PATCH /users/:id should not allow updating id field', async () => {
+    // Create a user
+    const createRes = await request(app)
+      .post('/users')
+      .send({
+        email: 'noidupdate@example.com',
+        password: 'testpass',
+        name: 'No ID Update'
+      });
+    const userId = createRes.body.id;
+    // Try to update id
+    const res = await request(app)
+      .patch(`/users/${userId}`)
+      .send({ id: 9999, name: 'Should Not Change ID' });
+    expect([200, 500]).toContain(res.statusCode);
+    if (res.statusCode === 200) {
+      expect(res.body.id).toBe(userId); // id should not change
+    } else {
+      expect(res.body.error).toBeDefined();
+    }
+  });
 });

@@ -11,6 +11,11 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
+    // Validate date range
+    if (new Date(endDate) <= new Date(startDate)) {
+      return res.status(400).json({ error: 'End date must be after start date.' });
+    }
+
     const newBooking = await Booking.create({
       startDate,
       endDate,
@@ -104,10 +109,14 @@ exports.cancelBooking = async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
+    if (booking.status === 'cancelled') {
+      return res.status(400).json({ error: 'Booking is already cancelled' });
+    }
+
     booking.status = 'cancelled';
     await booking.save();
 
-    res.status(200).json({ message: 'Booking cancelled successfully' });
+    res.status(200).json({ message: 'Booking cancelled successfully', status: booking.status });
   } catch (error) {
     console.error('Error cancelling booking:', error);
     res.status(500).json({ error: 'Failed to cancel booking' });

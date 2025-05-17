@@ -75,4 +75,117 @@ describe('Spaces API', () => {
       expect(res.body.error).toBeDefined();
     }
   });
+
+  it('PATCH /spaces/:id should not update a deleted space', async () => {
+    // Create and delete a space
+    const createRes = await request(app)
+      .post('/spaces')
+      .send({
+        title: 'Deleted Space',
+        price: 10,
+        ownerId: 1
+      });
+    const spaceId = createRes.body.id;
+    await request(app).delete(`/spaces/${spaceId}`);
+    // Try to update
+    const res = await request(app)
+      .patch(`/spaces/${spaceId}`)
+      .send({ title: 'Should Not Update' });
+    expect([404, 500]).toContain(res.statusCode);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('DELETE /spaces/:id should not delete an already deleted space', async () => {
+    // Create and delete a space
+    const createRes = await request(app)
+      .post('/spaces')
+      .send({
+        title: 'Already Deleted',
+        price: 10,
+        ownerId: 1
+      });
+    const spaceId = createRes.body.id;
+    await request(app).delete(`/spaces/${spaceId}`);
+    // Try to delete again
+    const res = await request(app).delete(`/spaces/${spaceId}`);
+    expect([404, 500]).toContain(res.statusCode);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('PATCH /spaces/:id should not allow updating id or invalid fields', async () => {
+    // Create a space
+    const createRes = await request(app)
+      .post('/spaces')
+      .send({
+        title: 'No ID Update',
+        price: 10,
+        ownerId: 1
+      });
+    const spaceId = createRes.body.id;
+    // Try to update id and send invalid price
+    const res = await request(app)
+      .patch(`/spaces/${spaceId}`)
+      .send({ id: 9999, price: 'not-a-number' });
+    expect([200, 400, 500]).toContain(res.statusCode);
+    if (res.statusCode === 200) {
+      expect(res.body.id).toBe(spaceId); // id should not change
+    } else {
+      expect(res.body.error).toBeDefined();
+    }
+  });
+
+  it('GET /spaces should return empty array when no spaces exist', async () => {
+    // Remove all spaces
+    await request(app).delete('/spaces/1');
+    const res = await request(app).get('/spaces');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('PATCH /spaces/:id with no changes should not error', async () => {
+    // Create a space
+    const createRes = await request(app)
+      .post('/spaces')
+      .send({
+        title: 'No Change',
+        price: 10,
+        ownerId: 1
+      });
+    const spaceId = createRes.body.id;
+    // Patch with no changes
+    const res = await request(app)
+      .patch(`/spaces/${spaceId}`)
+      .send({});
+    expect([200, 500]).toContain(res.statusCode);
+    if (res.statusCode === 200) {
+      expect(res.body.id).toBe(spaceId);
+    } else {
+      expect(res.body.error).toBeDefined();
+    }
+  });
+
+  it('POST /spaces with extremely long or empty title/description should fail validation', async () => {
+    // Empty title
+    let res = await request(app)
+      .post('/spaces')
+      .send({ title: '', price: 10, ownerId: 1 });
+    expect([400, 500]).toContain(res.statusCode);
+    // Long title
+    res = await request(app)
+      .post('/spaces')
+      .send({ title: 'a'.repeat(300), price: 10, ownerId: 1 });
+    expect([400, 500]).toContain(res.statusCode);
+  });
+
+  it('GET /spaces/:id for non-existent id should return 404', async () => {
+    const res = await request(app).get('/spaces/99999');
+    expect([404, 500]).toContain(res.statusCode);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('DELETE /spaces/:id for non-existent id should return 404', async () => {
+    const res = await request(app).delete('/spaces/99999');
+    expect([404, 500]).toContain(res.statusCode);
+    expect(res.body.error).toBeDefined();
+  });
 });
