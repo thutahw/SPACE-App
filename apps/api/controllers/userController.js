@@ -26,7 +26,7 @@ exports.updateUser = async (req, res) => {
     const user = await User.findByPk(req.params.id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const { email, password, role, deleted } = req.body;
+    const { email, password, role, deleted, name } = req.body;
 
     // Optional: prevent updates to deleted users unless restoring
     if (user.deleted && deleted !== false) {
@@ -37,6 +37,7 @@ exports.updateUser = async (req, res) => {
     if (password !== undefined) user.password = password; // auto-hashed via hook
     if (role !== undefined) user.role = role;
     if (deleted !== undefined) user.deleted = deleted;
+    if (name !== undefined) user.name = name;
 
     await user.save();
     res.status(200).json(user);
