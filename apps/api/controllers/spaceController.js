@@ -80,8 +80,8 @@ exports.updateSpace = async (req, res) => {
 
     const space = await Space.findByPk(spaceId);
 
-    if (!space) {
-      return res.status(404).json({ error: 'Space not found' });
+    if (!space || space.deleted) {
+      return res.status(404).json({ error: 'Space not found or already deleted' });
     }
 
     if (title !== undefined) space.title = title;
