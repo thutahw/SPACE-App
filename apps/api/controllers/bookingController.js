@@ -11,6 +11,20 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
+    // ✅ Self-booking 방지
+    const space = await Space.findByPk(SpaceId);
+    if (!space) {
+      return res.status(404).json({ error: 'Space not found.' });
+    }
+    if (space.ownerId === UserId) {
+      return res.status(403).json({ error: "You can't book your own space." });
+    }
+
+    // 날짜 유효성 검증
+    if (new Date(endDate) <= new Date(startDate)) {
+      return res.status(400).json({ error: 'End date must be after start date.' });
+    }
+
     const newBooking = await Booking.create({
       startDate,
       endDate,
@@ -73,7 +87,6 @@ exports.updateBookingStatus = async (req, res) => {
     const bookingId = req.params.bookingId;
     const { status } = req.body;
 
-    // Validate input
     const validStatuses = ['pending', 'confirmed', 'rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });

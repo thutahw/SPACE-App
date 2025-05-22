@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext'; // ✅ import auth context
 
 const SpaceDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth(); // ✅ get logged-in user
   const [space, setSpace] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -16,6 +18,11 @@ const SpaceDetail = () => {
   }, [id]);
 
   const handleBooking = async () => {
+    if (!user) {
+      setMessage('❌ You must be logged in to book.');
+      return;
+    }
+
     const response = await fetch('http://localhost:4000/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,7 +30,7 @@ const SpaceDetail = () => {
         startDate,
         endDate,
         SpaceId: space.id,
-        UserId: 1 // 🔐 placeholder for logged-in user
+        UserId: user.id // ✅ use actual logged-in user ID
       })
     });
 

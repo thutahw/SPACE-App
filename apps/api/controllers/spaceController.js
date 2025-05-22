@@ -68,7 +68,15 @@ exports.getSpaceById = async (req, res) => {
 exports.updateSpace = async (req, res) => {
   try {
     const spaceId = req.params.id;
-    const { title, description, price, location, imageUrls, deleted } = req.body;
+    const {
+      title,
+      description,
+      price,
+      location,
+      imageUrls,
+      deleted,
+      ownerId, // 👈 추가
+    } = req.body;
 
     const space = await Space.findByPk(spaceId);
 
@@ -82,14 +90,18 @@ exports.updateSpace = async (req, res) => {
     if (location !== undefined) space.location = location;
     if (imageUrls !== undefined) space.imageUrls = imageUrls;
     if (deleted !== undefined) space.deleted = deleted;
+    if (ownerId !== undefined) space.ownerId = ownerId; // 👈 추가
 
     await space.save();
+    await space.reload(); // 👈 save 후 최신값 반영
+
     res.status(200).json(space);
   } catch (error) {
     console.error('Error updating space:', error);
     res.status(500).json({ error: 'Failed to update space' });
   }
 };
+
 
 // Soft delete a space
 exports.deleteSpace = async (req, res) => {
