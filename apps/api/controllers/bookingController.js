@@ -11,7 +11,16 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    // Validate date range
+
+    // ✅ Self-booking prevention
+    const space = await Space.findByPk(SpaceId);
+    if (!space) {
+      return res.status(404).json({ error: 'Space not found.' });
+    }
+    if (space.ownerId === UserId) {
+      return res.status(403).json({ error: "You can't book your own space." });
+    }
+
     if (new Date(endDate) <= new Date(startDate)) {
       return res.status(400).json({ error: 'End date must be after start date.' });
     }
@@ -78,7 +87,6 @@ exports.updateBookingStatus = async (req, res) => {
     const bookingId = req.params.bookingId;
     const { status } = req.body;
 
-    // Validate input
     const validStatuses = ['pending', 'confirmed', 'rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });

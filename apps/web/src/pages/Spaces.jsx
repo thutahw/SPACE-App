@@ -26,13 +26,14 @@ const Spaces = () => {
       }}>
         <h1>Available Spaces</h1>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {user && <span> Hello, <strong> {user.name || user.email}</strong></span>}
           {user && (
             <button
               onClick={() => history.push('/bookings')}
               style={{
                 padding: '0.5rem 1rem',
-                backgroundColor: '#006400',
+                backgroundColor: 'green',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
@@ -42,7 +43,6 @@ const Spaces = () => {
               My Bookings
             </button>
           )}
-
           <button
             onClick={() => {
               if (user) {

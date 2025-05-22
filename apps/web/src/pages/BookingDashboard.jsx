@@ -1,78 +1,113 @@
+// src/pages/BookingDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 
 const BookingDashboard = () => {
   const { user } = useAuth();
-  const [userBookings, setUserBookings] = useState([]);
-  const [ownerBookings, setOwnerBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [myBookings, setMyBookings] = useState([]);
+  const [incomingBookings, setIncomingBookings] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!user) return;
 
-    const fetchData = async () => {
-      try {
-        const [userRes, ownerRes] = await Promise.all([
-          fetch(`http://localhost:4000/bookings/user/${user.id}`),
-          fetch(`http://localhost:4000/bookings/owner/${user.id}`)
-        ]);
+    // Fetch bookings made by this user
+    fetch(`http://localhost:4000/bookings/user/${user.id}`)
+      .then(res => res.json())
+      .then(data => setMyBookings(data))
+      .catch(err => {
+        console.error('Failed to fetch my bookings', err);
+        setError('Failed to fetch your bookings.');
+      });
 
-        const userData = await userRes.json();
-        const ownerData = await ownerRes.json();
+    // Fetch bookings received by this user if they are a space owner
+    fetch(`http://localhost:4000/bookings/owner/${user.id}`)
+      .then(res => res.json())
+      .then(data => setIncomingBookings(data))
+      .catch(err => {
+        console.error('Failed to fetch incoming bookings', err);
+        setError('Failed to fetch incoming bookings.');
+      });
 
-        setUserBookings(userData || []);
-        setOwnerBookings(ownerData || []);
-        setLoading(false);
-      } catch (err) {
-        console.error('Failed to fetch bookings:', err);
-        setLoading(false);
+  }, [user, refresh]);
+
+  const updateStatus = async (bookingId, status) => {
+    try {
+      const res = await fetch(`http://localhost:4000/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error('Failed to update booking status:', result.error);
+        alert(`Failed to update status: ${result.error || 'Unknown error'}`);
+      } else {
+        setRefresh(prev => !prev); // trigger re-fetch
       }
-    };
-
-    fetchData();
-  }, [user]);
-
-  if (!user) return <p>You must be logged in to view your bookings.</p>;
-  if (loading) return <p>Loading bookings...</p>;
+    } catch (err) {
+      console.error('Network error while updating booking status:', err);
+      alert('Network error while updating booking status.');
+    }
+  };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Your Booking Dashboard</h1>
+      <h1>Booking Dashboard</h1>
 
-      {/* Bookings Made by the User */}
-      <section style={{ marginTop: '2rem' }}>
-        <h2>Bookings You Made</h2>
-        {userBookings.length === 0 ? (
-          <p>You haven’t made any bookings yet.</p>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {/* Incoming Bookings (if this user owns spaces) */}
+      {incomingBookings.length > 0 && (
+        <section style={{ marginBottom: '2rem' }}>
+          <h2>Incoming Booking Requests</h2>
+          <ul>
+            {incomingBookings.map(booking => (
+              <li key={booking.id} style={{ marginBottom: '1rem' }}>
+                <strong>{booking.Space?.title}</strong> — {booking.startDate} to {booking.endDate}<br />
+                Requested by: {booking.User?.email}<br />
+                Status: <strong>{booking.status}</strong>
+                {booking.status === 'pending' && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button
+                      onClick={() => updateStatus(booking.id, 'confirmed')}
+                      style={{ marginRight: '0.5rem' }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => updateStatus(booking.id, 'rejected')}
+                      style={{ color: 'red' }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* My Own Bookings */}
+      <section>
+        <h2>My Booking Requests</h2>
+        {myBookings.length === 0 ? (
+          <p>You haven't made any bookings.</p>
         ) : (
           <ul>
-            {userBookings.map(booking => (
+            {myBookings.map(booking => (
               <li key={booking.id} style={{ marginBottom: '1rem' }}>
-                <strong>{booking.Space?.title}</strong><br />
-                {booking.startDate} → {booking.endDate} <br />
+                <strong>{booking.Space?.title}</strong> — {booking.startDate} to {booking.endDate}<br />
                 Status: <strong>{booking.status}</strong>
               </li>
             ))}
           </ul>
         )}
       </section>
-
-      {/* Bookings to the User’s Owned Spaces */}
-      {ownerBookings.length > 0 && (
-        <section style={{ marginTop: '3rem' }}>
-          <h2>Incoming Bookings for Your Spaces</h2>
-          <ul>
-            {ownerBookings.map(booking => (
-              <li key={booking.id} style={{ marginBottom: '1rem' }}>
-                <strong>{booking.Space?.title}</strong><br />
-                Booked by: {booking.User?.email} <br />
-                {booking.startDate} → {booking.endDate} <br />
-                Status: <strong>{booking.status}</strong>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 };
