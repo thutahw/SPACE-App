@@ -43,6 +43,22 @@ const Spaces = () => {
               My Bookings
             </button>
           )}
+          {user && (
+            <button
+              onClick={() => history.push('/create-space')}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#004aad',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              List your own space
+            </button>
+          )}
           <button
             onClick={() => {
               if (user) {
