@@ -59,6 +59,22 @@ const Spaces = () => {
               List your own space
             </button>
           )}
+          {user && (
+            <button
+              onClick={() => history.push('/my-spaces')}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#004aad',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              View your spaces
+            </button>
+          )}
           <button
             onClick={() => {
               if (user) {

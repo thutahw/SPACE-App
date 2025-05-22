@@ -19,6 +19,7 @@ function App() {
           <Route path="/spaces/:id" component={SpaceDetail} />
           <Route path="/bookings" component={BookingDashboard} />
           <Route path="/create-space" component={require('./pages/CreateSpace').default} />
+          <Route path="/my-spaces" component={require('./pages/MySpaces').default} />
         </Switch>
       </Router>
     </AuthProvider>
