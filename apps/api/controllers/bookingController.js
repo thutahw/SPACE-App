@@ -11,12 +11,11 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-
-    // ✅ Self-booking prevention
     const space = await Space.findByPk(SpaceId);
     if (!space) {
       return res.status(404).json({ error: 'Space not found.' });
     }
+
     if (space.ownerId === UserId) {
       return res.status(403).json({ error: "You can't book your own space." });
     }
@@ -66,7 +65,7 @@ exports.getBookingsByOwner = async (req, res) => {
       include: [
         {
           model: Space,
-          where: { ownerId: ownerId }
+          where: { ownerId }
         },
         {
           model: User
@@ -81,7 +80,7 @@ exports.getBookingsByOwner = async (req, res) => {
   }
 };
 
-// Update booking status (accept/reject)
+// Update booking status
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
@@ -107,7 +106,7 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
-// Cancel a booking
+// Cancel booking
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
@@ -118,13 +117,13 @@ exports.cancelBooking = async (req, res) => {
     }
 
     if (booking.status === 'cancelled') {
-      return res.status(400).json({ error: 'Booking is already cancelled' });
+      return res.status(400).json({ error: 'Booking already cancelled' });
     }
 
     booking.status = 'cancelled';
     await booking.save();
 
-    res.status(200).json({ message: 'Booking cancelled successfully', status: booking.status });
+    res.status(200).json({ message: 'Booking cancelled', status: booking.status });
   } catch (error) {
     console.error('Error cancelling booking:', error);
     res.status(500).json({ error: 'Failed to cancel booking' });
