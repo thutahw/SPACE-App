@@ -24,6 +24,10 @@ exports.createSpace = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: title, price, or ownerId' });
     }
 
+    if (title && title.length > 255) {
+      return res.status(400).json({ error: 'Title must be 255 characters or less.' });
+    }
+
     const newSpace = await Space.create({
       title,
       description,
@@ -82,6 +86,10 @@ exports.updateSpace = async (req, res) => {
 
     if (!space || space.deleted) {
       return res.status(404).json({ error: 'Space not found or already deleted' });
+    }
+
+    if (price !== undefined && isNaN(Number(price))) {
+      return res.status(400).json({ error: 'Price must be a valid number.' });
     }
 
     if (title !== undefined) space.title = title;

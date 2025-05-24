@@ -19,7 +19,9 @@ function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/spaces/:id" component={SpaceDetail} />
           <Route path="/bookings" component={BookingDashboard} />
-          <Route path="/booking" component={BookingPage} /> {/* ✅ use component, not element */}
+          <Route path="/booking" component={BookingPage} />
+          <Route path="/create-space" component={require('./pages/CreateSpace').default} />
+          <Route path="/my-spaces" component={require('./pages/MySpaces').default} />
         </Switch>
       </Router>
     </AuthProvider>

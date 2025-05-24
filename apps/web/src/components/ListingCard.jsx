@@ -2,6 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ListingCard = ({ space }) => {
+  if (!space) {
+    return null;
+  }
   // imageUrls가 string이면 JSON.parse, 배열이면 그대로 사용
   const parsedImageUrls =
     typeof space.imageUrls === 'string'
@@ -56,15 +59,17 @@ const ListingCard = ({ space }) => {
         {/* Description & Meta */}
         <div style={{ flexGrow: 1 }}>
           <p style={{ minHeight: '3.5rem', marginBottom: '0.5rem' }}>
-            {space.description.length > 80
-              ? space.description.slice(0, 77) + '...'
-              : space.description}
+            {typeof space.description === 'string' && space.description
+              ? (space.description.length > 80
+                  ? space.description.slice(0, 77) + '...'
+                  : space.description)
+              : 'No description available.'}
           </p>
           <p style={{ margin: '0 0 0.25rem 0' }}>
-            <strong>Price Per Day:</strong> ${space.price}
+            <strong>Price Per Day:</strong> ${space && space.price ? space.price : 'N/A'}
           </p>
           <p style={{ margin: 0 }}>
-            <strong>Location:</strong> {space.location}
+            <strong>Location:</strong> {space && space.location ? space.location : 'N/A'}
           </p>
         </div>
       </div>

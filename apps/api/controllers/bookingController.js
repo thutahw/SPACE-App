@@ -81,7 +81,7 @@ exports.getBookingsByOwner = async (req, res) => {
   }
 };
 
-// Update booking status
+// Update booking status (accept/reject)
 exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
@@ -111,8 +111,12 @@ exports.updateBookingStatus = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const booking = await Booking.findByPk(bookingId);
 
+    if (!bookingId || isNaN(Number(bookingId))) {
+      return res.status(400).json({ error: 'Invalid booking ID.' });
+    }
+
+    const booking = await Booking.findByPk(bookingId);
     if (!booking) {
       return res.status(404).json({ error: 'Booking not found' });
     }

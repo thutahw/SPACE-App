@@ -22,7 +22,6 @@ app.use('/users', userRoutes);
 
 app.use(express.static('public'));
 
-
 // Root route (optional)
 app.get('/', (req, res) => {
   res.send('SPACE-API is running 🚀');

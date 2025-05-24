@@ -7,7 +7,6 @@ const SpaceDetail = () => {
   const { id } = useParams();
   const history = useHistory();
   const { user } = useAuth();
-
   const [space, setSpace] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -25,12 +24,10 @@ const SpaceDetail = () => {
       setMessage('You must be logged in to book.');
       return;
     }
-
     if (!startDate || !endDate) {
       setMessage('Please select start and end dates.');
       return;
     }
-
     history.push({
       pathname: '/booking',
       state: {
@@ -47,7 +44,6 @@ const SpaceDetail = () => {
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <h1>{space.title}</h1>
-
       <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
         {/* Left Side */}
         <div style={{ flex: 2 }}>
@@ -69,7 +65,6 @@ const SpaceDetail = () => {
           <p><strong>Price Per Day:</strong> ${space.price}</p>
           <p><strong>Location:</strong> {space.location}</p>
         </div>
-
         {/* Right Side */}
         <div style={{
           flex: 1,
