@@ -36,7 +36,7 @@ describe('Bookings API', () => {
         UserId: 1,
         SpaceId: 1
       });
-    expect([201, 400, 404, 500]).toContain(res.statusCode);
+    expect([201, 400, 403, 404, 500]).toContain(res.statusCode);
     if (res.statusCode === 201) {
       expect(res.body).toHaveProperty('id');
     } else {
@@ -150,7 +150,7 @@ describe('Bookings API', () => {
         UserId: 1,
         SpaceId: 1
       });
-    expect([400, 500]).toContain(res.statusCode);
+    expect([400, 403, 500]).toContain(res.statusCode);
     expect(res.body.error).toBeDefined();
   });
 

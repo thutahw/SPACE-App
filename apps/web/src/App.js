@@ -8,8 +8,6 @@ import Signup from './pages/Signup';
 import { AuthProvider } from './auth/AuthContext';
 import BookingDashboard from './pages/BookingDashboard';
 
-
-
 function App() {
   return (
     <AuthProvider>
@@ -20,7 +18,8 @@ function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/spaces/:id" component={SpaceDetail} />
           <Route path="/bookings" component={BookingDashboard} />
-
+          <Route path="/create-space" component={require('./pages/CreateSpace').default} />
+          <Route path="/my-spaces" component={require('./pages/MySpaces').default} />
         </Switch>
       </Router>
     </AuthProvider>

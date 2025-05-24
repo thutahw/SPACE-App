@@ -11,7 +11,6 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-
     // ✅ Self-booking prevention
     const space = await Space.findByPk(SpaceId);
     if (!space) {
@@ -19,6 +18,9 @@ exports.createBooking = async (req, res) => {
     }
     if (space.ownerId === UserId) {
       return res.status(403).json({ error: "You can't book your own space." });
+    }
+    if (!UserId || !SpaceId) {
+      return res.status(400).json({ error: 'User or Space missing.' });
     }
 
     if (new Date(endDate) <= new Date(startDate)) {
@@ -111,6 +113,9 @@ exports.updateBookingStatus = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
+    if (!bookingId || isNaN(Number(bookingId))) {
+      return res.status(400).json({ error: 'Invalid booking ID.' });
+    }
     const booking = await Booking.findByPk(bookingId);
 
     if (!booking) {
