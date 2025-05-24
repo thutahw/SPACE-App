@@ -70,6 +70,9 @@ const BookingDashboard = () => {
                 <strong>{booking.Space?.title}</strong> — {booking.startDate} to {booking.endDate}<br />
                 Requested by: {booking.User?.email}<br />
                 Status: <strong>{booking.status}</strong>
+                {booking.message && (
+                  <p><strong>Message:</strong> {booking.message}</p>
+                )}
                 {booking.status === 'pending' && (
                   <div style={{ marginTop: '0.5rem' }}>
                     <button

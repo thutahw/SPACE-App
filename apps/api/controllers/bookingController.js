@@ -5,7 +5,7 @@ const { Booking, Space, User } = require('../models');
 // Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { startDate, endDate, UserId, SpaceId } = req.body;
+    const { startDate, endDate, UserId, SpaceId, message } = req.body;
 
     if (!startDate || !endDate || !UserId || !SpaceId) {
       return res.status(400).json({ error: 'Missing required fields.' });
@@ -29,7 +29,8 @@ exports.createBooking = async (req, res) => {
       endDate,
       UserId,
       SpaceId,
-      status: 'pending'
+      status: 'pending',
+      message
     });
 
     res.status(201).json(newBooking);
