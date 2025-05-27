@@ -1,10 +1,12 @@
+// src/pages/SpaceDetail.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext'; // ✅ import auth context
+import { useParams, useHistory } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 
 const SpaceDetail = () => {
   const { id } = useParams();
-  const { user } = useAuth(); // ✅ get logged-in user
+  const history = useHistory();
+  const { user } = useAuth();
   const [space, setSpace] = useState(null);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -17,29 +19,24 @@ const SpaceDetail = () => {
       .catch(err => console.error('Failed to fetch space detail:', err));
   }, [id]);
 
-  const handleBooking = async () => {
+  const handleNext = () => {
     if (!user) {
-      setMessage('❌ You must be logged in to book.');
+      setMessage('You must be logged in to book.');
       return;
     }
-
-    const response = await fetch('http://localhost:4000/bookings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    if (!startDate || !endDate) {
+      setMessage('Please select start and end dates.');
+      return;
+    }
+    history.push({
+      pathname: '/booking',
+      state: {
+        space,
         startDate,
         endDate,
-        SpaceId: space.id,
-        UserId: user.id // ✅ use actual logged-in user ID
-      })
+        userId: user.id
+      }
     });
-
-    const result = await response.json();
-    if (response.ok) {
-      setMessage('✅ Booking request submitted!');
-    } else {
-      setMessage(`❌ Booking failed: ${result.error || 'Unknown error'}`);
-    }
   };
 
   if (!space) return <p>Loading...</p>;
@@ -47,11 +44,10 @@ const SpaceDetail = () => {
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <h1>{space.title}</h1>
-
       <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-        {/* Left Side: Images + Description */}
+        {/* Left Side */}
         <div style={{ flex: 2 }}>
-          {space.imageUrls && [...new Set(space.imageUrls)].map((url, i) => (
+          {space.imageUrls?.map((url, i) => (
             <img
               key={i}
               src={url}
@@ -69,8 +65,7 @@ const SpaceDetail = () => {
           <p><strong>Price Per Day:</strong> ${space.price}</p>
           <p><strong>Location:</strong> {space.location}</p>
         </div>
-
-        {/* Right Side: Booking Form */}
+        {/* Right Side */}
         <div style={{
           flex: 1,
           border: '1px solid #ccc',
@@ -99,7 +94,7 @@ const SpaceDetail = () => {
               />
             </label>
             <button
-              onClick={handleBooking}
+              onClick={handleNext}
               style={{
                 padding: '0.75rem',
                 fontSize: '1rem',
@@ -111,9 +106,9 @@ const SpaceDetail = () => {
                 marginTop: '0.5rem'
               }}
             >
-              Submit Booking
+              Proceed to Payment
             </button>
-            {message && <p>{message}</p>}
+            {message && <p style={{ color: 'red' }}>{message}</p>}
           </div>
         </div>
       </div>

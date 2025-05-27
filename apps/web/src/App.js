@@ -5,8 +5,9 @@ import Spaces from './pages/Spaces';
 import SpaceDetail from './pages/SpaceDetail';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import { AuthProvider } from './auth/AuthContext';
 import BookingDashboard from './pages/BookingDashboard';
+import BookingPage from './pages/BookingPage';
+import { AuthProvider } from './auth/AuthContext';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/spaces/:id" component={SpaceDetail} />
           <Route path="/bookings" component={BookingDashboard} />
+          <Route path="/booking" component={BookingPage} />
           <Route path="/create-space" component={require('./pages/CreateSpace').default} />
           <Route path="/my-spaces" component={require('./pages/MySpaces').default} />
         </Switch>
