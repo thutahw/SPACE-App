@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "packageManager": "npm@10.5.0",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix apps/api\" \"npm start --prefix apps/web\"",
     "start": "concurrently \"npm start --prefix apps/api\" \"npm start --prefix apps/web\""
