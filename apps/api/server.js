@@ -1,33 +1,29 @@
-require('dotenv').config({ path: '../../.env' });
-// This file is the entry point for the API server.
+require('dotenv').config({ path: '../../.env' }); // 또는 그냥 .env
 
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const app = express();
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4000;
 
 // Middleware
-app.use(cors()); // allow cross-origin requests
-app.use(express.json()); // parse JSON request bodies
+app.use(cors());
+app.use(express.json());
+
+// Serve static files (for image uploads)
+app.use('/assets', express.static(path.join(__dirname, '../web/public/assets')));
 
 // Routes
-const spaceRoutes = require('./routes/spaces');
-app.use('/spaces', spaceRoutes);
+app.use('/spaces', require('./routes/spaces'));
+app.use('/bookings', require('./routes/bookings'));
+app.use('/users', require('./routes/users'));
 
-const bookingRoutes = require('./routes/bookings');
-app.use('/bookings', bookingRoutes);
-
-const userRoutes = require('./routes/users');
-app.use('/users', userRoutes);
-
-app.use(express.static('public'));
-
-// Root route (optional)
+// Root route
 app.get('/', (req, res) => {
   res.send('SPACE-API is running 🚀');
 });
 
 // Start server
-app.listen(port, () => {
-  console.log(`✅ Server listening on http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`✅ Server listening on http://localhost:${PORT}`);
 });
