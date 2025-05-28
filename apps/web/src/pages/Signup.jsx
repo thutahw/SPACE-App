@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import '../styles/Signup.css';
+
 
 const Signup = () => {
   const { login } = useAuth();

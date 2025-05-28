@@ -3,6 +3,7 @@ import { useHistory } from 'react-router-dom';
 import { fetchSpaces } from '../api/fetchSpaces';
 import ListingCard from '../components/ListingCard';
 import { useAuth } from '../auth/AuthContext';
+import '../styles/Spaces.css';
 
 const Spaces = () => {
   const [spaces, setSpaces] = useState([]);
@@ -75,7 +76,7 @@ const Spaces = () => {
               View your spaces
             </button>
           )}
-          <button
+          {/* <button
             onClick={() => {
               if (user) {
                 logout();
@@ -93,7 +94,7 @@ const Spaces = () => {
             }}
           >
             {user ? 'Logout' : 'Login'}
-          </button>
+          </button> */}
         </div>
       </div>
 

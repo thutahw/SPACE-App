@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { useHistory } from 'react-router-dom';
+import "../styles/MySpaces.css";
 
 const MySpaces = () => {
   const { user } = useAuth();
