@@ -1,0 +1,74 @@
+/* ──────────────────────────────────────────────
+   Global style sheet for SPACE web app
+   Defines CSS variables, reset, and base styles.
+─────────────────────────────────────────────── */
+:root {
+  /* brand palette */
+  --clr-primary: #5aa4cc;          /* SPACE brand blue */
+  --clr-primary-light: #e6f3fa;    /* light background tint */
+
+  /* greys */
+  --clr-grey-900: #111;
+  --clr-grey-600: #555;
+
+  /* radii & spacing */
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --space-s: 0.5rem;
+  --space-m: 1rem;
+
+  /* typography */
+  --font-sans: "Inter", "Pretendard", sans-serif;
+}
+
+/* ---------- CSS Reset / Normalise ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+/* ---------- Base styles ---------- */
+body {
+  font-family: var(--font-sans);
+  color: var(--clr-grey-900);
+  background: linear-gradient(135deg, #fafdfd 0%, var(--clr-primary-light) 100%);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img, picture, svg, video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ---------- Utility classes ---------- */
+.container {
+  width: min(1152px, 90%);
+  margin-inline: auto;
+}
+
+h1 {
+  font-size: 2rem;
+  margin: 0 0 var(--space-m);
+}
+
+h2 {
+  font-size: 1.25rem;
+  margin: 0 0 var(--space-s);
+}
