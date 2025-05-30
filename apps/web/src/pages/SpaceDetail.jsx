@@ -1,4 +1,6 @@
 // src/pages/SpaceDetail.jsx
+
+// src/pages/SpaceDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -12,12 +14,14 @@ const SpaceDetail = () => {
   const [endDate, setEndDate] = useState('');
   const [message, setMessage] = useState('');
 
+  const apiBaseUrl = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+
   useEffect(() => {
-    fetch(`http://localhost:4000/spaces/${id}`)
+    fetch(`${apiBaseUrl}/spaces/${id}`)
       .then(res => res.json())
       .then(data => setSpace(data))
       .catch(err => console.error('Failed to fetch space detail:', err));
-  }, [id]);
+  }, [id, apiBaseUrl]);
 
   const handleNext = () => {
     if (!user) {
@@ -65,6 +69,7 @@ const SpaceDetail = () => {
           <p><strong>Price Per Day:</strong> ${space.price}</p>
           <p><strong>Location:</strong> {space.location}</p>
         </div>
+
         {/* Right Side */}
         <div style={{
           flex: 1,

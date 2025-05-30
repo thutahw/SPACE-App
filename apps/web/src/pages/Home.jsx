@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { fetchSpaces } from '../api/fetchSpaces';
 import ListingCard from '../components/ListingCard';
+import '../styles/home.css';
 
-const Home = () => {
+export default function Home() {
   const [spaces, setSpaces] = useState([]);
 
   useEffect(() => {
@@ -12,17 +13,14 @@ const Home = () => {
   }, []);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Available Ad Spaces</h1>
-      <p>Total Listings: {spaces.length}</p>
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-        {spaces.map(space => (
-          <ListingCard key={space.id} space={space} />
-        ))}
-      </div>
-    </div>
+    <main className="homePage">
+      <h1 className="heroTitle">Discover local spaces for your ads</h1>
+      <p className="heroSubtitle">
+        List unused surfaces or find the perfect hyper-local spot to reach your audience.
+      </p>
+      <button className="ctaBtn" onClick={() => window.location.href = '/spaces'}>
+        Explore Spaces
+      </button>
+    </main>
   );
-};
-
-export default Home;
+}

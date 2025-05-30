@@ -2,15 +2,28 @@
   "name": "space-app",
   "version": "1.0.0",
   "private": true,
+
+
+  "workspaces": [          
+    "apps/api",
+    "apps/web"
+  ],
+
+  "packageManager": "npm@10.5.0",
+
   "scripts": {
-    "dev": "concurrently \"npm run dev --prefix apps/api\" \"npm start --prefix apps/web\"",
-    "start": "concurrently \"npm start --prefix apps/api\" \"npm start --prefix apps/web\""
+    "dev":   "concurrently \"npm run dev   -w api\" \"npm start -w web\"",
+    "start": "concurrently \"npm start -w api\"     \"npm start -w web\"",
+    "build": "npx turbo run build"     
   },
+
   "devDependencies": {
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+    "turbo": "^2.5.3"
   },
+
   "dependencies": {
     "express": "^5.1.0",
-    "multer": "^2.0.0"
+    "multer":  "^2.0.0"
   }
 }
