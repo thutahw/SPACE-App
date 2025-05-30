@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchSpaces } from '../api/fetchSpaces';
 import ListingCard from '../components/ListingCard';
 
-import './Spaces.css';   // 새로 만든 스타일
+import '../styles/Spaces.css';   // 새로 만든 스타일
 
 const Spaces = () => {
   const [spaces, setSpaces] = useState([]);
