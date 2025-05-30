@@ -1,12 +1,13 @@
 // src/components/Header.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import './Header.css';
 
 export default function Header() {
-  // TODO: 실제 인증 로직으로 교체
-  const isAuthenticated = false;
-  const { pathname } = useLocation();   // 현재 경로 확인
+  const { user, logout } = useAuth();
+  const isAuthenticated = !!user;
+  const { pathname }   = useLocation();      // 현재 라우트 확인
 
   return (
     <header className="site-header">
@@ -15,14 +16,22 @@ export default function Header() {
       <nav className="nav-links">
         {isAuthenticated ? (
           <>
+            {/* 간단 인사 */}
+            <span className="user-greet">
+              Hi, <strong>{user.name || user.email}</strong>
+            </span>
+
+            {/* 로그인 상태에서만 보이는 메뉴 */}
             <Link to="/bookings"     className="btn btn-outline">My Bookings</Link>
             <Link to="/create-space" className="btn btn-outline">List your space</Link>
             <Link to="/my-spaces"    className="btn btn-outline">My Spaces</Link>
-            <button className="btn btn-primary">Logout</button>
+
+            {/* 로그아웃 버튼 */}
+            <button onClick={logout} className="btn btn-primary">Logout</button>
           </>
         ) : (
-          /* 로그인 안 된 경우 ⇒ 링크 하나만 */
-          pathname !== '/login' && (
+          /* 비로그인 상태일 때는 /login, /signup 화면을 제외하고 Login 링크만 */
+          !['/login', '/signup'].includes(pathname) && (
             <Link to="/login" className="btn btn-primary">Login</Link>
           )
         )}
