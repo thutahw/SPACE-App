@@ -21,7 +21,8 @@ const Spaces = () => {
       {spaces.length === 0 ? (
         <p>No listings found.</p>
       ) : (
-        <div className="spaces-grid">
+        // 카드 영역
+        <div className="listing-grid">
           {spaces.map(space => (
             <ListingCard key={space.id} space={space} />
           ))}

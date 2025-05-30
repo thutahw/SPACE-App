@@ -82,6 +82,14 @@ body::before {
   gap: 1.5rem;
 }
 
+/* 리스트 그리드 추가 */
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+}
+
 /* 개별 카드 */
 .card {
   background: #ffffff;
@@ -96,6 +104,12 @@ body::before {
 .card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);
+}
+
+/* 카드가 너무 넓어지는 것 방지용(선택) */
+.listing-grid .card {
+  width: 100%;
+  max-width: 340px;
 }
 
 /* 카드 이미지 */
