@@ -1,115 +1,77 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { fetchSpaces } from '../api/fetchSpaces';
-import ListingCard from '../components/ListingCard';
-import { useAuth } from '../auth/AuthContext';
-import '../styles/Spaces.css';
+import ListingCard      from '../components/ListingCard';
+import { useAuth }      from '../auth/AuthContext';
 
+import '../styles/Home.css';        // <── new landing-page styles
+
+/**
+ * Public “Available Spaces” landing page.
+ * - Shows inventory to anyone.
+ * - When the user is logged-in, quick-action buttons appear.
+ */
 const Spaces = () => {
   const [spaces, setSpaces] = useState([]);
-  const history = useHistory();
-  const { user, logout } = useAuth();
+  const history             = useHistory();
+  const { user }            = useAuth();   // we only READ user here now
 
+  /* fetch inventory once on mount */
   useEffect(() => {
     fetchSpaces()
-      .then(data => setSpaces(data))
-      .catch(err => console.error("Failed to fetch spaces:", err));
+      .then(setSpaces)
+      .catch(err => console.error('Failed to fetch spaces:', err));
   }, []);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <h1>Available Spaces</h1>
+    <main className="home-container">
+      {/* ──────────────── Header */}
+      <header className="home-header">
+        <h1 className="home-title">Available Spaces</h1>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {user && <span> Hello, <strong> {user.name || user.email}</strong></span>}
-          {user && (
+        {user && (
+          <div className="home-actions">
+            <span className="welcome-text">
+              Hello,&nbsp;<strong>{user.name || user.email}</strong>
+            </span>
+
             <button
+              className="button button-green"
               onClick={() => history.push('/bookings')}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: 'green',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
             >
               My Bookings
             </button>
-          )}
-          {user && (
+
             <button
+              className="button button-blue"
               onClick={() => history.push('/create-space')}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#004aad',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
             >
               List your own space
             </button>
-          )}
-          {user && (
+
             <button
+              className="button button-blue"
               onClick={() => history.push('/my-spaces')}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#004aad',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
             >
               View your spaces
             </button>
-          )}
-          {/* <button
-            onClick={() => {
-              if (user) {
-                logout();
-              } else {
-                history.push('/login');
-              }
-            }}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: user ? '#888' : '#004aad',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            {user ? 'Logout' : 'Login'}
-          </button> */}
-        </div>
-      </div>
+          </div>
+        )}
+      </header>
 
-      <p>Spaces loaded: {spaces.length}</p>
+      {/* ──────────────── Inventory */}
+      <p className="space-count">Spaces loaded: {spaces.length}</p>
 
       {spaces.length === 0 ? (
-        <p>No listings found.</p>
+        <p className="no-listing">No listings found.</p>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+        <section className="listing-grid">
           {spaces.map(space => (
             <ListingCard key={space.id} space={space} />
           ))}
-        </div>
+        </section>
       )}
-    </div>
+    </main>
   );
 };
 

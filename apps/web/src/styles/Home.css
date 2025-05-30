@@ -1,10 +1,24 @@
-/* styles/home.css  */
+/* src/styles/home.css  */
 
 /* ----------  Layout ---------- */
 .home-container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
+  padding: 2rem 1.5rem;   /* 한 줄로 정리 */
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.home-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0;
 }
 
 /* ----------  Hero ---------- */
@@ -19,7 +33,7 @@
   font-size: clamp(2.4rem, 6vw, 4rem);
   font-weight: 700;
   line-height: 1.1;
-  color: #0a2540;          /* near-black navy */
+  color: #0a2540;
 }
 
 .hero__subtitle {
@@ -27,6 +41,17 @@
   font-size: 1.25rem;
   line-height: 1.6;
   color: #3f556e;
+}
+
+/* Quick-action area */
+.home-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.welcome-text {
+  font-size: 0.9rem;
 }
 
 /* ----------  CTA Buttons ---------- */
@@ -41,10 +66,7 @@
   cursor: pointer;
   transition: background 0.18s ease;
 }
-
-.btn-primary:hover {
-  background: #004aad;
-}
+.btn-primary:hover { background: #004aad; }
 
 .btn-secondary {
   background: transparent;
@@ -57,10 +79,12 @@
   cursor: pointer;
   transition: color 0.18s ease, background 0.18s ease;
 }
+.btn-secondary:hover { background: #f2f7ff; }
 
-.btn-secondary:hover {
-  background: #f2f7ff;
-}
+/* 재사용 버튼 색 변형 */
+.button        { @apply padding:0.5rem 1rem border:none border-radius:4px font-weight:600 color:#fff cursor:pointer; }
+.button-blue   { background:#004aad; }
+.button-green  { background:#0a9b3c; }
 
 /* ----------  Responsive Imagery ---------- */
 .hero__image {
@@ -93,10 +117,7 @@
   background: #ffffff;
   transition: box-shadow 0.18s ease;
 }
-
-.card:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-}
+.card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
 
 .card__title {
   margin-bottom: 0.5rem;
@@ -104,11 +125,23 @@
   font-weight: 600;
   color: #0a2540;
 }
-
 .card__text {
   font-size: 0.95rem;
   line-height: 1.55;
   color: #3f556e;
+}
+
+/* ----------  Listing Grid ---------- */
+.listing-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.space-count,
+.no-listing {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
 }
 
 /* ----------  Footer ---------- */
