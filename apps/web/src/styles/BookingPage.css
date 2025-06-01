@@ -82,6 +82,57 @@
   background: #059669; /* emerald-600 */
 }
 
+/* --------  Payment Section Styles  -------- */
+
+.payment-section {
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 24px 20px 16px 20px;
+  margin-top: 24px;
+  background: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  max-width: 420px;
+}
+
+.payment-section legend {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #004aad;
+  padding: 0 8px;
+}
+
+.payment-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 16px;
+  margin-top: 10px;
+}
+
+.payment-label {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 120px;
+  min-width: 120px;
+  font-size: 0.98rem;
+  color: #222;
+}
+
+.payment-input {
+  margin-top: 4px;
+  padding: 8px 12px;
+  border: 1px solid #bfc9d1;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #fff;
+  transition: border 0.2s;
+}
+
+.payment-input:focus {
+  border: 1.5px solid #004aad;
+  outline: none;
+  background: #f0f6ff;
+}
+
 /* ----------  Small screens tweaks  ---------- */
 
 @media (max-width: 640px) {

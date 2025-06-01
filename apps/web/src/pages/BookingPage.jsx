@@ -12,6 +12,10 @@ export default function BookingPage() {
   const [message, setMessage] = useState('');
   const [adFile, setAdFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiry, setExpiry] = useState("");
+  const [cvc, setCvc] = useState("");
 
   const apiBaseUrl = process.env.REACT_APP_API_URL;
 
@@ -29,9 +33,11 @@ export default function BookingPage() {
       alert("Please upload your ad material");
       return;
     }
-
+    if (!cardName || !cardNumber || !expiry || !cvc) {
+      alert("Please enter all payment details");
+      return;
+    }
     setSubmitting(true);
-
     try {
       const bookingRes = await fetch(`${apiBaseUrl}/bookings`, {
         method: "POST",
@@ -43,6 +49,12 @@ export default function BookingPage() {
           UserId: userId,
           status: "pending",
           message,
+          payment: {
+            cardName,
+            cardNumber,
+            expiry,
+            cvc,
+          },
         }),
       });
 
@@ -107,9 +119,7 @@ export default function BookingPage() {
             onChange={e => setAdFile(e.target.files[0])}
           />
         </label>
-
         <br /><br />
-
         <label>
           Leave a message:
           <textarea
@@ -119,6 +129,60 @@ export default function BookingPage() {
             onChange={e => setMessage(e.target.value)}
           />
         </label>
+        <br /><br />
+        <fieldset className="payment-section">
+          <legend>Payment Details</legend>
+          <div className="payment-fields">
+            <label className="payment-label">
+              Name on Card:
+              <input
+                type="text"
+                value={cardName}
+                onChange={e => setCardName(e.target.value)}
+                maxLength={40}
+                placeholder="Full Name"
+                className="payment-input"
+                autoComplete="cc-name"
+              />
+            </label>
+            <label className="payment-label">
+              Card Number:
+              <input
+                type="text"
+                value={cardNumber}
+                onChange={e => setCardNumber(e.target.value)}
+                maxLength={19}
+                placeholder="1234 5678 9012 3456"
+                className="payment-input"
+                autoComplete="cc-number"
+              />
+            </label>
+            <label className="payment-label">
+              Expiry (MM/YY):
+              <input
+                type="text"
+                value={expiry}
+                onChange={e => setExpiry(e.target.value)}
+                maxLength={5}
+                placeholder="MM/YY"
+                className="payment-input"
+                autoComplete="cc-exp"
+              />
+            </label>
+            <label className="payment-label">
+              CVV:
+              <input
+                type="password"
+                value={cvc}
+                onChange={e => setCvc(e.target.value)}
+                maxLength={4}
+                placeholder="CVV"
+                className="payment-input"
+                autoComplete="cc-csc"
+              />
+            </label>
+          </div>
+        </fieldset>
       </form>
 
       <div className="total-row">Total ${totalPrice.toFixed(2)}</div>
