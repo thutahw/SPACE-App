@@ -1,6 +1,6 @@
 # To restart in the future:
 
-cd /Users/vairocana/Desktop/SPACE-App
+cd /Users/vaircana/Desktop/SPACE-App
 
 # Start API
 

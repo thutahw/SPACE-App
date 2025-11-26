@@ -94,10 +94,10 @@ export class LocalStorageService implements StorageService {
   }
 
   getUrl(filename: string): string {
-    return `/api/uploads/images/${filename}`;
+    return `/uploads/images/${filename}`;
   }
 
   getThumbnailUrl(filename: string): string {
-    return `/api/uploads/thumbnails/${filename}`;
+    return `/uploads/thumbnails/${filename}`;
   }
 }

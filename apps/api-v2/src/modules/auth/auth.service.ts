@@ -119,7 +119,8 @@ export class AuthService {
     }
 
     // Delete the used refresh token (rotation)
-    await this.prisma.refreshToken.delete({
+    // Use deleteMany to handle race conditions where token was already deleted
+    await this.prisma.refreshToken.deleteMany({
       where: { id: storedToken.id },
     });
 

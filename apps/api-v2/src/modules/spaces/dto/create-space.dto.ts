@@ -3,7 +3,6 @@ import {
   IsNumber,
   IsOptional,
   IsArray,
-  IsUrl,
   MaxLength,
   Min,
   ArrayMaxSize,
@@ -30,7 +29,7 @@ export class CreateSpaceDto {
 
   @IsOptional()
   @IsArray()
-  @IsUrl({}, { each: true, message: 'Each image URL must be a valid URL' })
+  @IsString({ each: true })
   @ArrayMaxSize(10, { message: 'Maximum 10 images allowed' })
   imageUrls?: string[];
 }
