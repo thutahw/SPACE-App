@@ -2,28 +2,28 @@
   "name": "space-app",
   "version": "1.0.0",
   "private": true,
-
-
-  "workspaces": [          
-    "apps/api",
-    "apps/web"
-  ],
-
-  "packageManager": "npm@10.5.0",
-
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "dev":   "concurrently \"npm run dev   -w api\" \"npm start -w web\"",
-    "start": "concurrently \"npm start -w api\"     \"npm start -w web\"",
-    "build": "npx turbo run build"     
+    "dev": "turbo dev",
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "db:generate": "pnpm --filter api db:generate",
+    "db:push": "pnpm --filter api db:push",
+    "db:migrate": "pnpm --filter api db:migrate",
+    "db:seed": "pnpm --filter api db:seed",
+    "clean": "turbo clean && rm -rf node_modules"
   },
-
   "devDependencies": {
-    "concurrently": "^8.0.1",
+    "@space-app/eslint-config": "workspace:*",
+    "@space-app/typescript-config": "workspace:*",
     "turbo": "^2.5.3"
-  },
-
-  "dependencies": {
-    "express": "^5.1.0",
-    "multer":  "^2.0.0"
   }
 }
