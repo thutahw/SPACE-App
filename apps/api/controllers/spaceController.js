@@ -132,6 +132,27 @@ exports.deleteSpace = async (req, res) => {
   }
 };
 
+// Search/filter spaces by keyword, location, and price range
+exports.searchSpaces = async (req, res) => {
+  try {
+    const { keyword, location, minPrice, maxPrice } = req.query;
+    const { Op } = require('sequelize');
+    const where = { deleted: false };
+    if (keyword) where.title = { [Op.iLike]: `%${keyword}%` };
+    if (location) where.location = { [Op.iLike]: `%${location}%` };
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price[Op.gte] = Number(minPrice);
+      if (maxPrice) where.price[Op.lte] = Number(maxPrice);
+    }
+    const spaces = await Space.findAll({ where });
+    res.status(200).json(spaces);
+  } catch (error) {
+    console.error('Error searching spaces:', error);
+    res.status(500).json({ error: 'Failed to search spaces' });
+  }
+};
+
 // Optional authorization placeholder
 const isOwnerOrAdmin = (req, res, next) => {
   const user = req.user;

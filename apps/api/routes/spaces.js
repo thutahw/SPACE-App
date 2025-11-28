@@ -17,4 +17,7 @@ router.patch('/:id', spaceController.updateSpace);
 // Soft delete a space (DELETE)
 router.delete('/:id', spaceController.deleteSpace); // ✅ UNCOMMENTED
 
+// Search/filter spaces
+router.get('/search', spaceController.searchSpaces);
+
 module.exports = router;
