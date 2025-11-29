@@ -1,18 +1,16 @@
-export const UserRole = {
-  USER: 'USER',
-  ADMIN: 'ADMIN',
-} as const;
+// User roles
+export enum UserRole {
+  USER = 'USER',
+  ADMIN = 'ADMIN',
+}
 
-export type UserRole = (typeof UserRole)[keyof typeof UserRole];
-
-export const BookingStatus = {
-  PENDING: 'PENDING',
-  CONFIRMED: 'CONFIRMED',
-  REJECTED: 'REJECTED',
-  CANCELLED: 'CANCELLED',
-} as const;
-
-export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus];
+// Booking statuses
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  REJECTED = 'REJECTED',
+  CANCELLED = 'CANCELLED',
+}
 
 export const ErrorCodes = {
   // Auth errors (1xxx)
