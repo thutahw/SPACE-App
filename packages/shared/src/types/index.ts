@@ -1,4 +1,4 @@
-import type { BookingStatus, UserRole } from '../constants';
+import { BookingStatus, UserRole } from '../constants';
 
 // Base entity type
 export interface BaseEntity {

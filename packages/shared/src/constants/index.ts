@@ -1,16 +1,20 @@
-// User roles
-export enum UserRole {
-  USER = 'USER',
-  ADMIN = 'ADMIN',
-}
+// User roles - using string literal union types (compatible with Prisma enums)
+export type UserRole = 'USER' | 'ADMIN';
 
-// Booking statuses
-export enum BookingStatus {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  REJECTED = 'REJECTED',
-  CANCELLED = 'CANCELLED',
-}
+export const UserRole = {
+  USER: 'USER' as UserRole,
+  ADMIN: 'ADMIN' as UserRole,
+} as const;
+
+// Booking statuses - using string literal union types (compatible with Prisma enums)
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'REJECTED' | 'CANCELLED';
+
+export const BookingStatus = {
+  PENDING: 'PENDING' as BookingStatus,
+  CONFIRMED: 'CONFIRMED' as BookingStatus,
+  REJECTED: 'REJECTED' as BookingStatus,
+  CANCELLED: 'CANCELLED' as BookingStatus,
+} as const;
 
 export const ErrorCodes = {
   // Auth errors (1xxx)
