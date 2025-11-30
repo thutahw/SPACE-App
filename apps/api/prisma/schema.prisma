@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  role      UserRole  @default(USER)
+
+  // Soft delete
+  deletedAt DateTime?
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  spaces    Space[]
+  bookings  Booking[]
+
+  // Refresh tokens (for JWT refresh token rotation)
+  refreshTokens RefreshToken[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Space {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(255)
+  description String?   @db.Text
+  price       Decimal   @db.Decimal(10, 2)
+  location    String?   @db.VarChar(500)
+  imageUrls   String[]  @default([])
+
+  // Soft delete
+  deletedAt   DateTime?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+
+  @@index([ownerId])
+  @@index([deletedAt])
+  @@index([price])
+  @@index([location])
+  @@map("spaces")
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Decimal       @default(0) @db.Decimal(10, 2)
+  message    String?       @db.Text
+  status     BookingStatus @default(PENDING)
+
+  // Timestamps
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  // Relations
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  spaceId   String
+  space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([spaceId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("bookings")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("refresh_tokens")
+}
