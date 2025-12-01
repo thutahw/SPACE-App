@@ -88,11 +88,19 @@ export class BookingsService {
       });
     }
 
+    // Calculate total price based on number of days
+    const daysDiff = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const numberOfDays = Math.max(daysDiff, 1); // Minimum 1 day
+    const totalPrice = Number(space.price) * numberOfDays;
+
     // Create booking
     return this.prisma.booking.create({
       data: {
         startDate: start,
         endDate: end,
+        totalPrice,
         message,
         status: PrismaBookingStatus.PENDING,
         userId,

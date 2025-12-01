@@ -38,35 +38,51 @@ function clearStoredTokens() {
   localStorage.removeItem('auth_tokens');
 }
 
+// Refresh token lock to prevent race conditions
+let refreshPromise: Promise<string | null> | null = null;
+
 async function refreshAccessToken(): Promise<string | null> {
+  // If a refresh is already in progress, wait for it
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
   const tokens = getStoredTokens();
   if (!tokens?.refreshToken) return null;
 
-  try {
-    const response = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken: tokens.refreshToken }),
-    });
+  // Create a new refresh promise
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: tokens.refreshToken }),
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
+        clearStoredTokens();
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.success && data.data.accessToken) {
+        setStoredTokens({
+          accessToken: data.data.accessToken,
+          refreshToken: data.data.refreshToken || tokens.refreshToken,
+        });
+        return data.data.accessToken;
+      }
+      return null;
+    } catch {
       clearStoredTokens();
       return null;
+    } finally {
+      // Clear the promise after completion
+      refreshPromise = null;
     }
+  })();
 
-    const data = await response.json();
-    if (data.success && data.data.accessToken) {
-      setStoredTokens({
-        accessToken: data.data.accessToken,
-        refreshToken: data.data.refreshToken || tokens.refreshToken,
-      });
-      return data.data.accessToken;
-    }
-    return null;
-  } catch {
-    clearStoredTokens();
-    return null;
-  }
+  return refreshPromise;
 }
 
 async function apiRequest<T>(

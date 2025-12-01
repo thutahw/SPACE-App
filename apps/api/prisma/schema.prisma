@@ -73,11 +73,12 @@ model Space {
 }
 
 model Booking {
-  id        String        @id @default(cuid())
-  startDate DateTime
-  endDate   DateTime
-  message   String?       @db.Text
-  status    BookingStatus @default(PENDING)
+  id         String        @id @default(cuid())
+  startDate  DateTime
+  endDate    DateTime
+  totalPrice Decimal       @default(0) @db.Decimal(10, 2)
+  message    String?       @db.Text
+  status     BookingStatus @default(PENDING)
 
   // Timestamps
   createdAt DateTime      @default(now())
