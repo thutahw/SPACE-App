@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { HealthModule } from './modules/health/health.module';
+import { MessagesModule } from './modules/messages/messages.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { SpacesModule } from './modules/spaces/spaces.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -24,6 +25,7 @@ import { configValidationSchema } from './config/validation';
     SpacesModule,
     BookingsModule,
     UploadModule,
+    MessagesModule,
   ],
 })
 export class AppModule {}

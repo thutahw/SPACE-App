@@ -27,10 +27,12 @@ export default function NewSpacePage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [images, setImages] = useState<UploadedImage[]>([]);
 
   const createSpace = useMutation({
-    mutationFn: (data: { title: string; description?: string; price: number; location?: string; imageUrls?: string[] }) =>
+    mutationFn: (data: { title: string; description?: string; price: number; location?: string; latitude?: number; longitude?: number; imageUrls?: string[] }) =>
       spacesApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['my-spaces'] });
@@ -62,11 +64,16 @@ export default function NewSpacePage() {
       return;
     }
 
+    const lat = latitude ? parseFloat(latitude) : undefined;
+    const lng = longitude ? parseFloat(longitude) : undefined;
+
     createSpace.mutate({
       title,
       description: description || undefined,
       price: priceNum,
       location: location || undefined,
+      latitude: lat,
+      longitude: lng,
       imageUrls: images.length > 0 ? images.map((img) => img.url) : undefined,
     });
   };
@@ -133,6 +140,34 @@ export default function NewSpacePage() {
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., 37.7749"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., -122.4194"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Optional: Add coordinates to display your space on the map. You can find these on Google Maps.
+            </p>
 
             <div className="space-y-2">
               <Label>Images</Label>

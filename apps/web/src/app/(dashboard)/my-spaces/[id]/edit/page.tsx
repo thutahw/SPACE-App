@@ -28,6 +28,8 @@ export default function EditSpacePage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [location, setLocation] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [status, setStatus] = useState('ACTIVE');
   const [images, setImages] = useState<UploadedImage[]>([]);
 
@@ -43,6 +45,8 @@ export default function EditSpacePage() {
       setDescription(space.description || '');
       setPrice(String(space.price));
       setLocation(space.location || '');
+      setLatitude(space.latitude ? String(space.latitude) : '');
+      setLongitude(space.longitude ? String(space.longitude) : '');
       setStatus(space.status);
       // Convert existing image URLs to UploadedImage format
       if (space.imageUrls && space.imageUrls.length > 0) {
@@ -63,6 +67,8 @@ export default function EditSpacePage() {
       description?: string;
       price?: number;
       location?: string;
+      latitude?: number;
+      longitude?: number;
       status?: string;
       imageUrls?: string[];
     }) => spacesApi.update(params.id as string, data),
@@ -97,11 +103,16 @@ export default function EditSpacePage() {
       return;
     }
 
+    const lat = latitude ? parseFloat(latitude) : undefined;
+    const lng = longitude ? parseFloat(longitude) : undefined;
+
     updateSpace.mutate({
       title,
       description: description || undefined,
       price: priceNum,
       location: location || undefined,
+      latitude: lat,
+      longitude: lng,
       status,
       imageUrls: images.map((img) => img.url),
     });
@@ -185,6 +196,34 @@ export default function EditSpacePage() {
                 onChange={(e) => setLocation(e.target.value)}
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., 37.7749"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  placeholder="e.g., -122.4194"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Optional: Add coordinates to display your space on the map.
+            </p>
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>

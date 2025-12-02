@@ -25,5 +25,9 @@
     "@space-app/eslint-config": "workspace:*",
     "@space-app/typescript-config": "workspace:*",
     "turbo": "^2.5.3"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0"
   }
 }

@@ -64,6 +64,12 @@ export function Header() {
                 >
                   Bookings
                 </Link>
+                <Link
+                  href="/messages"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Messages
+                </Link>
               </>
             )}
           </nav>
@@ -104,6 +110,9 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/bookings">Bookings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/messages">Messages</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings">Settings</Link>
@@ -174,6 +183,13 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Bookings
+                </Link>
+                <Link
+                  href="/messages"
+                  className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Messages
                 </Link>
                 <button
                   className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent text-left text-destructive"

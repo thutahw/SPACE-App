@@ -44,8 +44,8 @@ pnpm install
 docker compose up -d postgres
 
 # Set up environment variables
-cp apps/api-v2/.env.example apps/api-v2/.env
-cp apps/web-v2/.env.example apps/web-v2/.env.local
+cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 
 # Generate Prisma client and push schema
 pnpm --filter api db:generate
@@ -57,12 +57,14 @@ pnpm dev
 
 The API will be available at `http://localhost:4001` and the frontend at `http://localhost:3001`.
 
+**Note:** The API default port is 4001 (configurable via PORT env variable). The frontend runs on port 3001 by default (see `apps/web/package.json`).
+
 ## Project Structure
 
 ```
 SPACE-App/
 ├── apps/
-│   ├── api-v2/           # NestJS backend
+│   ├── api/              # NestJS backend
 │   │   ├── src/
 │   │   │   ├── common/   # Filters, interceptors, decorators
 │   │   │   ├── config/   # Configuration validation
@@ -72,11 +74,13 @@ SPACE-App/
 │   │   │       ├── health/
 │   │   │       ├── prisma/
 │   │   │       ├── spaces/
+│   │   │       ├── upload/
 │   │   │       └── users/
 │   │   ├── prisma/       # Database schema
-│   │   └── test/         # E2E tests
+│   │   ├── test/         # E2E tests
+│   │   └── uploads/      # Local image storage
 │   │
-│   └── web-v2/           # Next.js frontend
+│   └── web/              # Next.js frontend
 │       └── src/
 │           ├── app/      # App Router pages
 │           ├── components/
@@ -106,7 +110,7 @@ pnpm type-check   # Type check all apps
 pnpm test         # Run all tests
 ```
 
-### API (`apps/api-v2`)
+### API (`apps/api`)
 
 ```bash
 pnpm --filter api dev           # Start development server
@@ -120,7 +124,7 @@ pnpm --filter api db:migrate    # Create migration
 pnpm --filter api db:studio     # Open Prisma Studio
 ```
 
-### Frontend (`apps/web-v2`)
+### Frontend (`apps/web`)
 
 ```bash
 pnpm --filter web dev     # Start development server
@@ -160,9 +164,16 @@ pnpm --filter web lint    # Run linting
 - `GET /api/health/live` - Liveness probe
 - `GET /api/health/ready` - Readiness probe
 
+### Upload
+- `POST /api/upload/image` - Upload single image
+- `POST /api/upload/images` - Upload multiple images (max 5)
+- `DELETE /api/upload/:filename` - Delete image
+- `GET /api/upload/images/:filename` - Serve uploaded image
+- `GET /api/upload/thumbnails/:filename` - Serve thumbnail
+
 ## Environment Variables
 
-### API (`apps/api-v2/.env`)
+### API (`apps/api/.env`)
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/space_app"
@@ -172,10 +183,10 @@ JWT_REFRESH_SECRET="your-refresh-secret-min-32-chars"
 JWT_REFRESH_EXPIRES_IN="7d"
 PORT=4001
 NODE_ENV=development
-FRONTEND_URL="http://localhost:3001"
+FRONTEND_URL="http://localhost:3000"
 ```
 
-### Frontend (`apps/web-v2/.env.local`)
+### Frontend (`apps/web/.env.local`)
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:4001/api
@@ -213,12 +224,35 @@ The project includes a `render.yaml` blueprint for one-click deployment:
 
 ```bash
 # Build images
-docker build -t space-api -f apps/api-v2/Dockerfile .
-docker build -t space-web -f apps/web-v2/Dockerfile .
+docker build -t space-api -f apps/api/Dockerfile .
+docker build -t space-web -f apps/web/Dockerfile .
 
 # Run with docker-compose
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
+
+**Note:** Production Docker Compose configuration may need to be created based on project requirements.
+
+## Current Implementation Status
+
+### Completed Features ✅
+- User authentication (JWT with refresh tokens)
+- Space management (CRUD operations)
+- Booking system (request, confirm, cancel)
+- Image upload system (local storage with thumbnails)
+- Soft delete for users and spaces
+- E2E test coverage
+- Health check endpoints
+
+### In Development / Planned
+- Payment processing (Stripe integration)
+- Map integration for space discovery
+- Messaging system between users
+- Email verification
+- Content moderation system
+- Analytics dashboard
+
+For detailed feature specifications, see [docs/core_features.md](./docs/core_features.md).
 
 ## Migration from Legacy
 
