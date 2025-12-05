@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { spacesApi } from '@/lib/api-client';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
@@ -17,10 +18,17 @@ import {
 } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
 import { Search, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const SpaceMap = dynamic(() => import('@/components/space-map'), {
+  ssr: false,
+  loading: () => <div className="h-[500px] bg-muted rounded-lg animate-pulse" />,
+});
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
 
 export default function SpacesPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -61,6 +69,26 @@ export default function SpacesPage() {
             </Button>
           </form>
         </div>
+
+        {/* Map View */}
+        {!isLoading && data?.data && data.data.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Map View</h2>
+            <SpaceMap
+              spaces={data.data
+                .filter(space => space.latitude && space.longitude)
+                .map(space => ({
+                  id: space.id,
+                  title: space.title,
+                  location: space.location,
+                  latitude: space.latitude,
+                  longitude: space.longitude,
+                  price: String(space.price),
+                }))}
+              onMarkerClick={(id) => router.push(`/spaces/${id}`)}
+            />
+          </div>
+        )}
 
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

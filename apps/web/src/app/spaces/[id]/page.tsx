@@ -19,7 +19,13 @@ import {
 } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { MapPin, Calendar, ArrowLeft, User } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, User, MessageCircle } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const SpaceMap = dynamic(() => import('@/components/space-map'), {
+  ssr: false,
+  loading: () => <div className="h-[300px] bg-muted rounded-lg animate-pulse" />,
+});
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
 
@@ -180,16 +186,51 @@ export default function SpaceDetailPage() {
                 <CardHeader>
                   <CardTitle>Listed by</CardTitle>
                 </CardHeader>
-                <CardContent className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-6 w-6 text-primary" />
+                <CardContent>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">{space.owner.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Member since {formatDate(space.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{space.owner.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Member since {formatDate(space.createdAt)}
-                    </p>
-                  </div>
+                  {isAuthenticated && !isOwnSpace && (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link href={`/messages?userId=${space.ownerId}`}>
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        Contact Owner
+                      </Link>
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Map Location */}
+            {space.latitude && space.longitude && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Location</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SpaceMap
+                    spaces={[{
+                      id: space.id,
+                      title: space.title,
+                      location: space.location,
+                      latitude: space.latitude,
+                      longitude: space.longitude,
+                      price: String(space.price),
+                    }]}
+                  />
                 </CardContent>
               </Card>
             )}

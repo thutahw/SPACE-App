@@ -30,6 +30,14 @@ export class UpdateSpaceDto {
   location?: string;
 
   @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(10, { message: 'Maximum 10 images allowed' })
