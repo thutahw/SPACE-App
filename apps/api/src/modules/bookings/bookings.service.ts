@@ -1,13 +1,16 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { BookingStatus as PrismaBookingStatus, Prisma } from '@prisma/client';
 
 import { BookingStatus, ErrorCodes, UserRole } from '@space-app/shared';
 
+import { ConversationsService } from '../conversations/conversations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SpacesService } from '../spaces/spaces.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
@@ -18,7 +21,9 @@ import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 export class BookingsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly spacesService: SpacesService
+    private readonly spacesService: SpacesService,
+    @Inject(forwardRef(() => ConversationsService))
+    private readonly conversationsService: ConversationsService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string) {
@@ -375,7 +380,7 @@ export class BookingsService {
       });
     }
 
-    return this.prisma.booking.update({
+    const updatedBooking = await this.prisma.booking.update({
       where: { id },
       data: { status: status as PrismaBookingStatus },
       include: {
@@ -396,6 +401,26 @@ export class BookingsService {
         },
       },
     });
+
+    // Auto-create conversation when booking is confirmed
+    if (status === BookingStatus.CONFIRMED) {
+      try {
+        await this.conversationsService.findOrCreate(
+          updatedBooking.space.ownerId,
+          {
+            participantId: updatedBooking.userId,
+            spaceId: updatedBooking.spaceId,
+            bookingId: updatedBooking.id,
+            initialMessage: `Your booking for "${updatedBooking.space.title}" has been confirmed! Feel free to reach out with any questions.`,
+          },
+        );
+      } catch (error) {
+        // Log error but don't fail the booking confirmation
+        console.error('Failed to create conversation for booking:', error);
+      }
+    }
+
+    return updatedBooking;
   }
 
   async cancel(id: string, userId: string, userRole: UserRole) {

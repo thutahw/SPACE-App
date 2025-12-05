@@ -11,4 +11,8 @@ export const configValidationSchema = Joi.object({
   JWT_REFRESH_SECRET: Joi.string().required().min(32),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   FRONTEND_URL: Joi.string().default('http://localhost:3000'),
+  // Stripe configuration (optional for development)
+  STRIPE_SECRET_KEY: Joi.string().optional(),
+  STRIPE_WEBHOOK_SECRET: Joi.string().optional(),
+  APP_URL: Joi.string().default('http://localhost:4001'),
 });

@@ -2,6 +2,9 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  Inject,
+  forwardRef,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -10,16 +13,21 @@ import { ErrorCodes, type TokenPayload, type User } from '@space-app/shared';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
+import { EmailService } from '../email/email.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => EmailService))
+    private readonly emailService: EmailService,
   ) {}
 
   async register(registerDto: RegisterDto) {
@@ -33,6 +41,12 @@ export class AuthService {
       updatedAt: user.updatedAt.toISOString(),
     };
     const tokens = await this.generateTokens(userForToken);
+
+    // Send verification email (non-blocking)
+    this.emailService.sendVerificationEmail(user.id, user.email, user.name || undefined)
+      .catch((err) => {
+        this.logger.error(`Failed to send verification email to ${user.email}:`, err);
+      });
 
     return {
       user,

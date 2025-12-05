@@ -70,6 +70,12 @@ export function Header() {
                 >
                   Messages
                 </Link>
+                <Link
+                  href="/designs"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  My Designs
+                </Link>
               </>
             )}
           </nav>
@@ -113,6 +119,9 @@ export function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/messages">Messages</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/designs">My Designs</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings">Settings</Link>
@@ -190,6 +199,13 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Messages
+                </Link>
+                <Link
+                  href="/designs"
+                  className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  My Designs
                 </Link>
                 <button
                   className="px-3 py-2 text-sm font-medium rounded-md hover:bg-accent text-left text-destructive"

@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { QuerySpacesDto } from './dto/query-spaces.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
+import { BoundsQueryDto } from './dto/bounds-query.dto';
 import { SpacesService } from './spaces.service';
 
 @Controller('spaces')
@@ -37,6 +38,17 @@ export class SpacesController {
   @Public()
   findAll(@Query() query: QuerySpacesDto) {
     return this.spacesService.findAll(query);
+  }
+
+  /**
+   * GET /spaces/in-bounds
+   * Find spaces within a geographic bounding box.
+   * Used by the map view to load visible markers.
+   */
+  @Get('in-bounds')
+  @Public()
+  findInBounds(@Query() query: BoundsQueryDto) {
+    return this.spacesService.findInBounds(query);
   }
 
   @Get('my-spaces')
