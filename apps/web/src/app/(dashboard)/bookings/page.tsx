@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import { bookingsApi } from '@/lib/api-client';
+import { useRouter } from 'next/navigation';
+import { bookingsApi, paymentsApi, conversationsApi } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,13 +15,14 @@ import {
 } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { Calendar, MapPin, Check, X, Clock } from 'lucide-react';
+import { Calendar, MapPin, Check, X, Clock, CreditCard, Loader2, MessageCircle } from 'lucide-react';
 
 type TabType = 'my-bookings' | 'incoming';
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('my-bookings');
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { data: myBookings, isLoading: loadingMyBookings } = useQuery({
     queryKey: ['my-bookings'],
@@ -70,6 +72,45 @@ export default function BookingsPage() {
     },
   });
 
+  const initiatePayment = useMutation({
+    mutationFn: (bookingId: string) =>
+      paymentsApi.createCheckoutSession(
+        bookingId,
+        `${window.location.origin}/bookings?payment=success`,
+        `${window.location.origin}/bookings?payment=cancelled`,
+      ),
+    onSuccess: (data) => {
+      // Redirect to Stripe Checkout
+      window.location.href = data.url;
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Payment failed',
+        description: error.message,
+      });
+    },
+  });
+
+  const startConversation = useMutation({
+    mutationFn: (params: { participantId: string; spaceId: string; bookingId: string }) =>
+      conversationsApi.create({
+        participantId: params.participantId,
+        spaceId: params.spaceId,
+        bookingId: params.bookingId,
+      }),
+    onSuccess: (data) => {
+      router.push(`/messages?conversation=${data.id}`);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to start conversation',
+        description: error.message,
+      });
+    },
+  });
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'CONFIRMED':
@@ -95,6 +136,37 @@ export default function BookingsPage() {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getPaymentStatusBadge = (paymentStatus?: string) => {
+    switch (paymentStatus) {
+      case 'SUCCEEDED':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+            <Check className="h-3 w-3" /> Paid
+          </span>
+        );
+      case 'PROCESSING':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+            <Loader2 className="h-3 w-3 animate-spin" /> Processing
+          </span>
+        );
+      case 'FAILED':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+            <X className="h-3 w-3" /> Failed
+          </span>
+        );
+      case 'REFUNDED':
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+            Refunded
+          </span>
+        );
+      default:
+        return null;
     }
   };
 
@@ -182,14 +254,51 @@ export default function BookingsPage() {
                           {booking.space.location}
                         </p>
                       )}
-                      <p className="font-semibold mt-2">
-                        Total: {formatCurrency(booking.totalPrice)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <p className="font-semibold">
+                          Total: {formatCurrency(booking.totalPrice)}
+                        </p>
+                        {(booking as any).paymentStatus && getPaymentStatusBadge((booking as any).paymentStatus)}
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/spaces/${booking.spaceId}`}>View Space</Link>
                       </Button>
+                      {/* Message the space owner */}
+                      {booking.space?.owner && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            startConversation.mutate({
+                              participantId: booking.space!.owner!.id,
+                              spaceId: booking.spaceId,
+                              bookingId: booking.id,
+                            })
+                          }
+                          disabled={startConversation.isPending}
+                        >
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          Message
+                        </Button>
+                      )}
+                      {/* Show Pay Now for confirmed bookings that need payment */}
+                      {booking.status === 'CONFIRMED' &&
+                       (!((booking as any).paymentStatus) || (booking as any).paymentStatus === 'PENDING' || (booking as any).paymentStatus === 'FAILED') && (
+                        <Button
+                          size="sm"
+                          onClick={() => initiatePayment.mutate(booking.id)}
+                          disabled={initiatePayment.isPending}
+                        >
+                          {initiatePayment.isPending ? (
+                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          ) : (
+                            <CreditCard className="h-4 w-4 mr-1" />
+                          )}
+                          Pay Now
+                        </Button>
+                      )}
                       {booking.status === 'PENDING' && (
                         <Button
                           variant="destructive"
@@ -269,29 +378,49 @@ export default function BookingsPage() {
                     <p className="font-semibold">
                       Total: {formatCurrency(booking.totalPrice)}
                     </p>
-                    {booking.status === 'PENDING' && (
-                      <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      {/* Message the booker */}
+                      {booking.user && (
                         <Button
+                          variant="outline"
                           size="sm"
                           onClick={() =>
-                            updateStatus.mutate({ id: booking.id, status: 'CONFIRMED' })
+                            startConversation.mutate({
+                              participantId: booking.user!.id,
+                              spaceId: booking.spaceId,
+                              bookingId: booking.id,
+                            })
                           }
-                          disabled={updateStatus.isPending}
+                          disabled={startConversation.isPending}
                         >
-                          <Check className="h-4 w-4 mr-1" /> Confirm
+                          <MessageCircle className="h-4 w-4 mr-1" />
+                          Message
                         </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() =>
-                            updateStatus.mutate({ id: booking.id, status: 'REJECTED' })
-                          }
-                          disabled={updateStatus.isPending}
-                        >
-                          <X className="h-4 w-4 mr-1" /> Reject
-                        </Button>
-                      </div>
-                    )}
+                      )}
+                      {booking.status === 'PENDING' && (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              updateStatus.mutate({ id: booking.id, status: 'CONFIRMED' })
+                            }
+                            disabled={updateStatus.isPending}
+                          >
+                            <Check className="h-4 w-4 mr-1" /> Confirm
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                              updateStatus.mutate({ id: booking.id, status: 'REJECTED' })
+                            }
+                            disabled={updateStatus.isPending}
+                          >
+                            <X className="h-4 w-4 mr-1" /> Reject
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

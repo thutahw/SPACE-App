@@ -52,7 +52,7 @@ export default function RegisterPage() {
       await register(email, password, name);
       toast({
         title: 'Account created!',
-        description: 'Welcome to SPACE. Your account has been created.',
+        description: 'A verification email has been sent. Please check your inbox.',
       });
     } catch (error) {
       const message =

@@ -19,12 +19,42 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum DesignStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+}
+
+enum AvailabilityType {
+  AVAILABLE
+  BLOCKED
+  BOOKED
+}
+
 model User {
   id        String    @id @default(cuid())
   email     String    @unique
   password  String
   name      String?
   role      UserRole  @default(USER)
+
+  // Email verification
+  emailVerified       Boolean   @default(false)
+  emailVerificationToken String? @unique
+  emailVerificationExpires DateTime?
+
+  // Profile
+  profileImageUrl String?
 
   // Soft delete
   deletedAt DateTime?
@@ -36,12 +66,19 @@ model User {
   // Relations
   spaces    Space[]
   bookings  Booking[]
+  designs   Design[]
 
   // Refresh tokens (for JWT refresh token rotation)
   refreshTokens RefreshToken[]
 
+  // NEW: Conversation-based messaging
+  sentMessages       Message[]      @relation("SentMessages")
+  conversationsAsOne Conversation[] @relation("ConversationParticipantOne")
+  conversationsAsTwo Conversation[] @relation("ConversationParticipantTwo")
+
   @@index([email])
   @@index([deletedAt])
+  @@index([emailVerificationToken])
   @@map("users")
 }
 
@@ -51,6 +88,8 @@ model Space {
   description String?   @db.Text
   price       Decimal   @db.Decimal(10, 2)
   location    String?   @db.VarChar(500)
+  latitude    Float?
+  longitude   Float?
   imageUrls   String[]  @default([])
 
   // Soft delete
@@ -64,11 +103,17 @@ model Space {
   ownerId     String
   owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   bookings    Booking[]
+  availability SpaceAvailability[]
+  designs     Design[]
+
+  // NEW: Conversations about this space
+  conversations Conversation[]
 
   @@index([ownerId])
   @@index([deletedAt])
   @@index([price])
   @@index([location])
+  @@index([latitude, longitude])
   @@map("spaces")
 }
 
@@ -80,6 +125,14 @@ model Booking {
   message    String?       @db.Text
   status     BookingStatus @default(PENDING)
 
+  // Payment fields
+  paymentStatus         PaymentStatus @default(PENDING)
+  stripePaymentIntentId String?       @unique
+  stripeSessionId       String?       @unique
+  paidAt                DateTime?
+  refundedAt            DateTime?
+  refundAmount          Decimal?      @db.Decimal(10, 2)
+
   // Timestamps
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
@@ -90,9 +143,17 @@ model Booking {
   spaceId   String
   space     Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
+  // NEW: Conversations about this booking
+  conversations Conversation[]
+
+  // NEW: Related models
+  availability SpaceAvailability[]
+  designs      Design[]
+
   @@index([userId])
   @@index([spaceId])
   @@index([status])
+  @@index([paymentStatus])
   @@index([startDate, endDate])
   @@map("bookings")
 }
@@ -108,4 +169,141 @@ model RefreshToken {
   @@index([token])
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+// ============================================
+// NEW: Conversation Model
+// ============================================
+model Conversation {
+  id            String    @id @default(cuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastMessageAt DateTime?
+  lastMessagePreview String? @db.VarChar(100)
+
+  // Participants (ALWAYS SORTED: participantOneId < participantTwoId lexicographically)
+  participantOneId String
+  participantOne   User   @relation("ConversationParticipantOne", fields: [participantOneId], references: [id])
+  participantTwoId String
+  participantTwo   User   @relation("ConversationParticipantTwo", fields: [participantTwoId], references: [id])
+
+  // Context (optional)
+  spaceId   String?
+  space     Space?   @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  // Per-user archive state
+  isArchivedByOne Boolean @default(false)
+  isArchivedByTwo Boolean @default(false)
+
+  messages Message[]
+
+  @@unique([participantOneId, participantTwoId])
+  @@index([participantOneId, lastMessageAt(sort: Desc)])
+  @@index([participantTwoId, lastMessageAt(sort: Desc)])
+  @@map("conversations")
+}
+
+// ============================================
+// UPDATED: Message Model (Conversation-based)
+// ============================================
+model Message {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Sender relation
+  senderId String
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  // NEW: Conversation relation (required for new messages)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // LEGACY: Keep for data migration, will be removed in Phase 2
+  receiverId String?
+  bookingId  String?
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ============================================
+// Design Model - For advertiser design uploads
+// ============================================
+model Design {
+  id          String       @id @default(cuid())
+  name        String       @db.VarChar(255)
+  description String?      @db.Text
+  fileUrl     String       // URL to the uploaded design file
+  fileType    String       @db.VarChar(50) // PDF, JPG, PNG, etc.
+  fileSize    Int          // File size in bytes
+  thumbnailUrl String?     // Generated thumbnail for preview
+
+  // Design specifications
+  width       Float?       // Width in cm/inches
+  height      Float?       // Height in cm/inches
+
+  // Approval workflow
+  status      DesignStatus @default(PENDING_REVIEW)
+  reviewNotes String?      @db.Text
+  reviewedAt  DateTime?
+
+  // Timestamps
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  uploaderId  String
+  uploader    User         @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  // Optional: Link to specific space/booking
+  spaceId     String?
+  space       Space?       @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  bookingId   String?
+  booking     Booking?     @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([uploaderId])
+  @@index([status])
+  @@index([spaceId])
+  @@index([bookingId])
+  @@map("designs")
+}
+
+// ============================================
+// Space Availability Model - Calendar management
+// ============================================
+model SpaceAvailability {
+  id        String           @id @default(cuid())
+  date      DateTime         @db.Date
+  type      AvailabilityType @default(AVAILABLE)
+  notes     String?          @db.VarChar(255)
+
+  // Price override for specific dates (optional)
+  priceOverride Decimal?     @db.Decimal(10, 2)
+
+  // Timestamps
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  spaceId   String
+  space     Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  // Optional: Link to booking that caused BOOKED status
+  bookingId String?
+  booking   Booking?         @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@unique([spaceId, date])
+  @@index([spaceId, date])
+  @@index([date])
+  @@map("space_availability")
 }

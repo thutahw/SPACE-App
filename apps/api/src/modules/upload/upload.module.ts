@@ -16,11 +16,12 @@ import { UploadService } from './upload.service';
   controllers: [UploadController],
   providers: [
     UploadService,
+    LocalStorageService,
     {
       provide: STORAGE_SERVICE,
       useClass: LocalStorageService,
     },
   ],
-  exports: [UploadService],
+  exports: [UploadService, LocalStorageService, STORAGE_SERVICE],
 })
 export class UploadModule {}

@@ -11,6 +11,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { QuerySpacesDto } from './dto/query-spaces.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
+import { BoundsQueryDto } from './dto/bounds-query.dto';
 
 @Injectable()
 export class SpacesService {
@@ -235,5 +236,59 @@ export class SpacesService {
     });
 
     return space?.ownerId === userId;
+  }
+
+  /**
+   * Find spaces within a geographic bounding box.
+   * Uses float-based lat/lng filtering (PostGIS fallback).
+   */
+  async findInBounds(query: BoundsQueryDto) {
+    const { swLat, swLng, neLat, neLng, minPrice, maxPrice, limit = 50 } = query;
+
+    const where: Prisma.SpaceWhereInput = {
+      deletedAt: null,
+      // Only include spaces with coordinates
+      latitude: { not: null },
+      longitude: { not: null },
+      // Bounding box filter
+      AND: [
+        { latitude: { gte: swLat } },
+        { latitude: { lte: neLat } },
+        { longitude: { gte: swLng } },
+        { longitude: { lte: neLng } },
+      ],
+    };
+
+    // Price filter
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) {
+        where.price.gte = new Prisma.Decimal(minPrice);
+      }
+      if (maxPrice !== undefined) {
+        where.price.lte = new Prisma.Decimal(maxPrice);
+      }
+    }
+
+    const spaces = await this.prisma.space.findMany({
+      where,
+      take: limit,
+      include: {
+        owner: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      data: spaces,
+      count: spaces.length,
+      bounds: { swLat, swLng, neLat, neLng },
+    };
   }
 }

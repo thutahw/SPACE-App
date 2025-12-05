@@ -17,7 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { formatCurrency } from '@/lib/utils';
-import { Search, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MapPin, ChevronLeft, ChevronRight, Map } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const SpaceMap = dynamic(() => import('@/components/space-map'), {
@@ -57,17 +57,25 @@ export default function SpacesPage() {
               Find the perfect advertising space for your brand
             </p>
           </div>
-          <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
-            <Input
-              placeholder="Search spaces..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full md:w-64"
-            />
-            <Button type="submit" size="icon">
-              <Search className="h-4 w-4" />
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+              <Input
+                placeholder="Search spaces..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full md:w-64"
+              />
+              <Button type="submit" size="icon">
+                <Search className="h-4 w-4" />
+              </Button>
+            </form>
+            <Button variant="outline" asChild>
+              <Link href="/spaces/explore" className="flex items-center gap-2">
+                <Map className="h-4 w-4" />
+                Explore Map
+              </Link>
             </Button>
-          </form>
+          </div>
         </div>
 
         {/* Map View */}

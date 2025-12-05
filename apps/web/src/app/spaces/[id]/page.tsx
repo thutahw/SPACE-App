@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { MapPin, Calendar, ArrowLeft, User, MessageCircle } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, User } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { ContactHostModal } from '@/components/messaging';
+import { AvailabilityCalendar } from '@/components/availability-calendar';
 
 const SpaceMap = dynamic(() => import('@/components/space-map'), {
   ssr: false,
@@ -180,6 +182,32 @@ export default function SpaceDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Availability Calendar */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Availability</CardTitle>
+                <CardDescription>
+                  {isOwnSpace
+                    ? 'Manage your space availability'
+                    : 'Check available dates for this space'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AvailabilityCalendar
+                  spaceId={space.id}
+                  isOwner={isOwnSpace}
+                  onDateSelect={(start, end) => {
+                    setStartDate(start.toISOString().split('T')[0]);
+                    setEndDate(end.toISOString().split('T')[0]);
+                  }}
+                  selectedRange={{
+                    start: startDate ? new Date(startDate) : null,
+                    end: endDate ? new Date(endDate) : null,
+                  }}
+                />
+              </CardContent>
+            </Card>
+
             {/* Owner Info */}
             {space.owner && (
               <Card>
@@ -198,17 +226,13 @@ export default function SpaceDetailPage() {
                       </p>
                     </div>
                   </div>
-                  {isAuthenticated && !isOwnSpace && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      asChild
-                    >
-                      <Link href={`/messages?userId=${space.ownerId}`}>
-                        <MessageCircle className="mr-2 h-4 w-4" />
-                        Contact Owner
-                      </Link>
-                    </Button>
+                  {!isOwnSpace && (
+                    <ContactHostModal
+                      spaceId={space.id}
+                      spaceTitle={space.title}
+                      hostId={space.ownerId}
+                      hostName={space.owner?.name || space.owner?.email || 'Host'}
+                    />
                   )}
                 </CardContent>
               </Card>

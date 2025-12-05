@@ -201,6 +201,8 @@ export const spacesApi = {
         description: string | null;
         price: number;
         location: string | null;
+        latitude: number | null;
+        longitude: number | null;
         imageUrls: string[];
         status: string;
         ownerId: string;
@@ -218,6 +220,8 @@ export const spacesApi = {
       description: string | null;
       price: number;
       location: string | null;
+      latitude: number | null;
+      longitude: number | null;
       imageUrls: string[];
       status: string;
       ownerId: string;
@@ -264,6 +268,8 @@ export const spacesApi = {
         description: string | null;
         price: number;
         location: string | null;
+        latitude: number | null;
+        longitude: number | null;
         status: string;
         createdAt: string;
       }>
@@ -344,7 +350,12 @@ export const bookingsApi = {
         status: string;
         totalPrice: number;
         createdAt: string;
-        space?: { id: string; title: string; location: string | null };
+        space?: {
+          id: string;
+          title: string;
+          location: string | null;
+          owner?: { id: string; name: string | null; email: string };
+        };
       }>
     >('/bookings/my-bookings'),
 
@@ -441,6 +452,406 @@ export const uploadApi = {
 
   deleteImage: (filename: string) =>
     apiRequest<void>(`/uploads/${filename}`, { method: 'DELETE' }),
+};
+
+// Conversations API
+export const conversationsApi = {
+  list: () =>
+    apiRequest<
+      Array<{
+        id: string;
+        partner: { id: string; name: string | null; email: string };
+        space: { id: string; title: string } | null;
+        booking: { id: string; startDate: string; endDate: string } | null;
+        lastMessageAt: string | null;
+        lastMessagePreview: string | null;
+        createdAt: string;
+        unreadCount: number;
+      }>
+    >('/conversations'),
+
+  create: (data: {
+    participantId: string;
+    spaceId?: string;
+    bookingId?: string;
+    initialMessage?: string;
+  }) =>
+    apiRequest<{
+      id: string;
+      partner: { id: string; name: string | null; email: string };
+      space: { id: string; title: string } | null;
+    }>('/conversations', {
+      method: 'POST',
+      body: data,
+    }),
+
+  getMessages: (id: string, cursor?: string, limit = 20) => {
+    const params = new URLSearchParams();
+    if (cursor) params.set('cursor', cursor);
+    params.set('limit', String(limit));
+    return apiRequest<{
+      messages: Array<{
+        id: string;
+        content: string;
+        createdAt: string;
+        isRead: boolean;
+        sender: { id: string; name: string | null; email: string };
+      }>;
+      hasMore: boolean;
+      nextCursor: string | null;
+    }>(`/conversations/${id}?${params.toString()}`);
+  },
+
+  getInfo: (id: string) =>
+    apiRequest<{
+      id: string;
+      partner: { id: string; name: string | null; email: string };
+      space: { id: string; title: string } | null;
+      booking: { id: string; startDate: string; endDate: string } | null;
+    }>(`/conversations/${id}/info`),
+
+  sendMessage: (conversationId: string, content: string) =>
+    apiRequest<{
+      id: string;
+      content: string;
+      createdAt: string;
+      sender: { id: string; name: string | null; email: string };
+    }>(`/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: { content },
+    }),
+
+  markAsRead: (id: string) =>
+    apiRequest<{ success: boolean }>(`/conversations/${id}/read`, {
+      method: 'PATCH',
+    }),
+
+  archive: (id: string) =>
+    apiRequest<{ success: boolean }>(`/conversations/${id}/archive`, {
+      method: 'PATCH',
+    }),
+};
+
+// Spaces API - additional map methods
+export const mapApi = {
+  getInBounds: (params: {
+    swLat: number;
+    swLng: number;
+    neLat: number;
+    neLng: number;
+    minPrice?: number;
+    maxPrice?: number;
+    limit?: number;
+  }) => {
+    const searchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) searchParams.set(key, String(value));
+    });
+    return apiRequest<{
+      data: Array<{
+        id: string;
+        title: string;
+        price: number;
+        latitude: number | null;
+        longitude: number | null;
+        location: string | null;
+        imageUrls: string[];
+        owner: { id: string; name: string | null; email: string };
+      }>;
+      count: number;
+      bounds: { swLat: number; swLng: number; neLat: number; neLng: number };
+    }>(`/spaces/in-bounds?${searchParams.toString()}`);
+  },
+};
+
+// Geocoding API
+export const geocodingApi = {
+  status: () =>
+    apiRequest<{ available: boolean }>('/geocoding/status'),
+
+  forward: (address: string) =>
+    apiRequest<{
+      success: boolean;
+      message?: string;
+      data: {
+        latitude: number;
+        longitude: number;
+        formattedAddress: string;
+        placeType: string;
+      } | null;
+    }>(`/geocoding/forward?address=${encodeURIComponent(address)}`),
+
+  reverse: (lat: number, lng: number) =>
+    apiRequest<{
+      success: boolean;
+      message?: string;
+      data: {
+        latitude: number;
+        longitude: number;
+        formattedAddress: string;
+        placeType: string;
+      } | null;
+    }>(`/geocoding/reverse?lat=${lat}&lng=${lng}`),
+
+  autocomplete: (query: string, proximity?: { lat: number; lng: number }) => {
+    const params = new URLSearchParams({ query });
+    if (proximity) {
+      params.set('lat', String(proximity.lat));
+      params.set('lng', String(proximity.lng));
+    }
+    return apiRequest<{
+      success: boolean;
+      data: Array<{
+        id: string;
+        placeName: string;
+        text: string;
+        center: [number, number]; // [lng, lat]
+      }>;
+    }>(`/geocoding/autocomplete?${params.toString()}`);
+  },
+};
+
+// Payments API
+export const paymentsApi = {
+  createCheckoutSession: (bookingId: string, successUrl: string, cancelUrl: string) =>
+    apiRequest<{ sessionId: string; url: string }>('/payments/checkout-session', {
+      method: 'POST',
+      body: { bookingId, successUrl, cancelUrl },
+    }),
+
+  createPaymentIntent: (bookingId: string) =>
+    apiRequest<{ clientSecret: string; paymentIntentId: string }>('/payments/payment-intent', {
+      method: 'POST',
+      body: { bookingId },
+    }),
+
+  getPaymentStatus: (bookingId: string) =>
+    apiRequest<{ paymentStatus: string; stripeSessionId: string | null; paidAt: string | null }>(
+      `/payments/status/${bookingId}`
+    ),
+
+  requestRefund: (bookingId: string, amount?: number) =>
+    apiRequest<{ refundId: string; amount: number }>('/payments/refund', {
+      method: 'POST',
+      body: { bookingId, amount },
+    }),
+};
+
+// Email API
+export const emailApi = {
+  verifyEmail: (token: string) =>
+    apiRequest<{ message: string }>(`/email/verify?token=${encodeURIComponent(token)}`),
+
+  resendVerification: () =>
+    apiRequest<{ message: string }>('/email/resend-verification', {
+      method: 'POST',
+    }),
+};
+
+// Designs API
+export const designsApi = {
+  list: (params?: { status?: string; spaceId?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.set(key, String(value));
+      });
+    }
+    const query = searchParams.toString();
+    return apiRequest<
+      Array<{
+        id: string;
+        name: string;
+        description: string | null;
+        fileUrl: string;
+        fileType: string;
+        fileSize: number;
+        thumbnailUrl: string | null;
+        width: number | null;
+        height: number | null;
+        status: string;
+        reviewNotes: string | null;
+        reviewedAt: string | null;
+        createdAt: string;
+        spaceId: string | null;
+        bookingId: string | null;
+      }>
+    >(`/designs${query ? `?${query}` : ''}`);
+  },
+
+  get: (id: string) =>
+    apiRequest<{
+      id: string;
+      name: string;
+      description: string | null;
+      fileUrl: string;
+      fileType: string;
+      fileSize: number;
+      thumbnailUrl: string | null;
+      width: number | null;
+      height: number | null;
+      status: string;
+      reviewNotes: string | null;
+      reviewedAt: string | null;
+      createdAt: string;
+      spaceId: string | null;
+      bookingId: string | null;
+      space?: { id: string; title: string };
+      booking?: { id: string };
+    }>(`/designs/${id}`),
+
+  upload: async (
+    file: File,
+    data: {
+      name?: string;
+      description?: string;
+      spaceId?: string;
+      bookingId?: string;
+      width?: number;
+      height?: number;
+    }
+  ) => {
+    const tokens = getStoredTokens();
+    const formData = new FormData();
+    formData.append('file', file);
+    if (data.name) formData.append('name', data.name);
+    if (data.description) formData.append('description', data.description);
+    if (data.spaceId) formData.append('spaceId', data.spaceId);
+    if (data.bookingId) formData.append('bookingId', data.bookingId);
+    if (data.width) formData.append('width', String(data.width));
+    if (data.height) formData.append('height', String(data.height));
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api'}/designs`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: tokens?.accessToken ? `Bearer ${tokens.accessToken}` : '',
+        },
+        body: formData,
+      }
+    );
+
+    const responseData = await response.json();
+
+    if (!responseData.success || !response.ok) {
+      throw new ApiError(
+        response.status,
+        responseData.error?.code || 'UPLOAD_ERROR',
+        responseData.error?.message || 'Failed to upload design'
+      );
+    }
+
+    return responseData.data as {
+      id: string;
+      name: string;
+      fileUrl: string;
+      thumbnailUrl: string | null;
+      status: string;
+    };
+  },
+
+  update: (
+    id: string,
+    data: {
+      name?: string;
+      description?: string;
+      width?: number;
+      height?: number;
+    }
+  ) =>
+    apiRequest<{ id: string }>(`/designs/${id}`, {
+      method: 'PATCH',
+      body: data,
+    }),
+
+  delete: (id: string) =>
+    apiRequest<{ success: boolean }>(`/designs/${id}`, { method: 'DELETE' }),
+};
+
+// Availability API
+export const availabilityApi = {
+  get: (spaceId: string, startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams();
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    const query = params.toString();
+    return apiRequest<{
+      spaceId: string;
+      basePrice: number;
+      availability: Array<{
+        id: string;
+        date: string;
+        type: string;
+        notes: string | null;
+        priceOverride: number | null;
+        bookingId: string | null;
+      }>;
+      bookings: Array<{
+        id: string;
+        startDate: string;
+        endDate: string;
+        status: string;
+      }>;
+    }>(`/availability/${spaceId}${query ? `?${query}` : ''}`);
+  },
+
+  check: (spaceId: string, startDate: string, endDate: string) =>
+    apiRequest<{ available: boolean; conflicts: string[] }>(
+      `/availability/${spaceId}/check?startDate=${startDate}&endDate=${endDate}`
+    ),
+
+  setAvailability: (
+    spaceId: string,
+    data: {
+      dates: string[];
+      type: 'AVAILABLE' | 'BLOCKED';
+      notes?: string;
+      priceOverride?: number;
+    }
+  ) =>
+    apiRequest<
+      Array<{
+        id: string;
+        date: string;
+        type: string;
+        notes: string | null;
+        priceOverride: number | null;
+      }>
+    >(`/availability/${spaceId}`, {
+      method: 'POST',
+      body: data,
+    }),
+
+  blockDates: (spaceId: string, dates: string[], notes?: string) =>
+    apiRequest<
+      Array<{
+        id: string;
+        date: string;
+        type: string;
+      }>
+    >(`/availability/${spaceId}/block`, {
+      method: 'POST',
+      body: { dates, notes },
+    }),
+
+  unblockDates: (spaceId: string, dates: string[]) =>
+    apiRequest<{ deleted: number }>(`/availability/${spaceId}/block`, {
+      method: 'DELETE',
+      body: { dates },
+    }),
+
+  setPriceOverride: (spaceId: string, dates: string[], price: number) =>
+    apiRequest<
+      Array<{
+        id: string;
+        date: string;
+        priceOverride: number | null;
+      }>
+    >(`/availability/${spaceId}/price`, {
+      method: 'POST',
+      body: { dates, price },
+    }),
 };
 
 export { ApiError, getStoredTokens, setStoredTokens, clearStoredTokens };
