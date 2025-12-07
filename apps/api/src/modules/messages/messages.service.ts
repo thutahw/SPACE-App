@@ -24,13 +24,6 @@ export class MessagesService {
             email: true,
           },
         },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
     });
   }
@@ -45,13 +38,6 @@ export class MessagesService {
       },
       include: {
         sender: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        receiver: {
           select: {
             id: true,
             name: true,
@@ -79,26 +65,38 @@ export class MessagesService {
             email: true,
           },
         },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
 
+    // Get all unique partner user IDs
+    const partnerIds = new Set<string>();
+    messages.forEach((message) => {
+      const partnerId = message.senderId === userId ? message.receiverId : message.senderId;
+      if (partnerId) {
+        partnerIds.add(partnerId);
+      }
+    });
+
+    // Fetch partner user details
+    const partners = await this.prisma.user.findMany({
+      where: { id: { in: Array.from(partnerIds) } },
+      select: { id: true, name: true, email: true },
+    });
+
+    const partnerMap = new Map(partners.map((p) => [p.id, p]));
+
     // Group by conversation partner
     const conversationsMap = new Map();
     messages.forEach((message) => {
       const partnerId = message.senderId === userId ? message.receiverId : message.senderId;
+      if (!partnerId) return;
+
       if (!conversationsMap.has(partnerId)) {
         conversationsMap.set(partnerId, {
-          partner: message.senderId === userId ? message.receiver : message.sender,
+          partner: partnerMap.get(partnerId) || { id: partnerId, name: null, email: 'Unknown' },
           lastMessage: message,
           unreadCount: 0,
         });

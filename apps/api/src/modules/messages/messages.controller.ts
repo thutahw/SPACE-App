@@ -11,16 +11,16 @@ export class MessagesController {
 
   @Post()
   create(@CurrentUser() user: any, @Body() createMessageDto: CreateMessageDto) {
-    return this.messagesService.create(user.userId, createMessageDto);
+    return this.messagesService.create(user.sub, createMessageDto);
   }
 
   @Get('conversations')
   findAllConversations(@CurrentUser() user: any) {
-    return this.messagesService.findAllConversations(user.userId);
+    return this.messagesService.findAllConversations(user.sub);
   }
 
   @Get('conversation')
   findConversation(@CurrentUser() user: any, @Query('userId') otherUserId: string) {
-    return this.messagesService.findConversation(user.userId, otherUserId);
+    return this.messagesService.findConversation(user.sub, otherUserId);
   }
 }
