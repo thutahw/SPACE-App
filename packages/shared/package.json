@@ -34,11 +34,11 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "5.4.5",
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@space-app/typescript-config": "workspace:*",
-    "tsup": "^8.0.0",
-    "typescript": "^5.4.0"
+    "@space-app/typescript-config": "workspace:*"
   }
 }
