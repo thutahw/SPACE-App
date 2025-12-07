@@ -105,7 +105,7 @@ export function AddressAutocomplete({
         case 'Enter':
           e.preventDefault();
           if (selectedIndex >= 0 && results[selectedIndex]) {
-            handleSelect(results[selectedIndex]);
+            handleSelect(results[selectedIndex]!);
           }
           break;
         case 'Escape':
