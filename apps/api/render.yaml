@@ -7,7 +7,7 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: npx pnpm@9.0.0 install && npx pnpm@9.0.0 run build && npx prisma generate && npx prisma db push
+    buildCommand: cd ../.. && npx pnpm@9.0.0 install && npx pnpm@9.0.0 --filter @space-app/shared run build && npx pnpm@9.0.0 --filter api run build && cd apps/api && npx prisma db push
     startCommand: npm run start:prod
     healthCheckPath: /api
     envVars:
