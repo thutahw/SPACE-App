@@ -1,22 +1,6 @@
 {
-  "version": 2,
-  "env": {
-    "SKIP_PREFLIGHT_CHECK": "true"
-  },
-  "builds": [
-    {
-      "src": "apps/api/index.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": ["apps/api/**"] }
-    },
-    {
-      "src": "apps/web/package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "apps/web/build" }
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/apps/api/index.js" },
-    { "src": "/(.*)", "dest": "/apps/web/build/$1" }
-  ]
+  "buildCommand": "cd ../.. && npx pnpm@9.0.0 install && cd apps/web && npx pnpm@9.0.0 run build",
+  "installCommand": "npx pnpm@9.0.0 install",
+  "framework": "nextjs",
+  "outputDirectory": "apps/web/.next"
 }

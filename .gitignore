@@ -70,3 +70,5 @@ coverage/
 # Optional local development tools
 .cache
 kill-ports.sh
+.claude/
+apps/api/uploads/
