@@ -43,13 +43,13 @@ export function AvailabilityCalendar({
   const startDate = useMemo(() => {
     const date = new Date(currentMonth);
     date.setDate(1);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split('T')[0] ?? '';
   }, [currentMonth]);
 
   const endDate = useMemo(() => {
     const date = new Date(currentMonth);
     date.setMonth(date.getMonth() + 3);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split('T')[0] ?? '';
   }, [currentMonth]);
 
   const { data: availability, isLoading } = useQuery({
@@ -105,7 +105,7 @@ export function AvailabilityCalendar({
 
     if (availability?.availability) {
       availability.availability.forEach((entry) => {
-        const dateKey = new Date(entry.date).toISOString().split('T')[0];
+        const dateKey = new Date(entry.date).toISOString().split('T')[0] ?? '';
         let status: DayStatus = 'available';
         if (entry.type === 'BLOCKED') status = 'blocked';
         if (entry.type === 'BOOKED') status = 'booked';
@@ -146,7 +146,7 @@ export function AvailabilityCalendar({
       // Add days of the month
       for (let day = 1; day <= lastDay.getDate(); day++) {
         const date = new Date(year, month, day);
-        const dateKey = date.toISOString().split('T')[0];
+        const dateKey = date.toISOString().split('T')[0] ?? '';
         const isPast = date < today;
 
         let status: DayStatus = 'available';
@@ -185,7 +185,7 @@ export function AvailabilityCalendar({
   const handleDayClick = (day: DayInfo) => {
     if (day.status === 'past' || day.status === 'booked') return;
 
-    const dateKey = day.date.toISOString().split('T')[0];
+    const dateKey = day.date.toISOString().split('T')[0] ?? '';
 
     if (isOwner && isBlockMode) {
       // Owner block mode - toggle date selection
@@ -251,7 +251,7 @@ export function AvailabilityCalendar({
   };
 
   const getDayClassName = (day: DayInfo) => {
-    const dateKey = day.date.toISOString().split('T')[0];
+    const dateKey = day.date.toISOString().split('T')[0] ?? '';
     const isSelected = selectedDates.has(dateKey);
 
     const baseClasses =

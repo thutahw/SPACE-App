@@ -197,8 +197,8 @@ export default function SpaceDetailPage() {
                   spaceId={space.id}
                   isOwner={isOwnSpace}
                   onDateSelect={(start, end) => {
-                    setStartDate(start.toISOString().split('T')[0]);
-                    setEndDate(end.toISOString().split('T')[0]);
+                    setStartDate(start.toISOString().split('T')[0] ?? '');
+                    setEndDate(end.toISOString().split('T')[0] ?? '');
                   }}
                   selectedRange={{
                     start: startDate ? new Date(startDate) : null,
